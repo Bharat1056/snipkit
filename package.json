@@ -42,6 +42,7 @@
     "@radix-ui/react-toggle-group": "^1.1.10",
     "@radix-ui/react-tooltip": "^1.2.7",
     "@types/lodash.debounce": "^4.0.9",
+    "@vercel/analytics": "^1.5.0",
     "ag-grid-community": "^34.0.0",
     "ag-grid-react": "^34.0.0",
     "axios": "^1.10.0",
