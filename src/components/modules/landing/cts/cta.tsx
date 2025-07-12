@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ArrowRight } from "lucide-react"
+// import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cta } from "./constants"
 
@@ -13,12 +13,12 @@ const Cta = () => {
           </h2>
           <p className="mt-6 text-lg leading-8 text-muted-foreground transition-colors duration-200">{cta.subheading}</p>
           <div className="mt-10 flex items-center justify-center gap-x-6">
-            <Button size="lg" asChild>
+            {/* <Button size="lg" asChild>
               <Link href={cta.primary.href}>
                 {cta.primary.label}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
-            </Button>
+            </Button> */}
             <Button variant="outline" size="lg" asChild>
               <Link href={cta.secondary.href}>{cta.secondary.label}</Link>
             </Button>

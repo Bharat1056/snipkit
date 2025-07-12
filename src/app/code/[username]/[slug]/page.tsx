@@ -5,72 +5,16 @@ import { CodeViewer } from "@/components/code/code-viewer";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { CopyCommandButton } from "../../component/copy-command-btn";
-import { Metadata, ResolvingMetadata } from "next";
-
-type Props = {
-  params: { username: string; slug: string };
-  searchParams: { [key: string]: string | string[] | undefined };
-};
-
-export async function generateMetadata(
-  { params }: Props,
-  parent: ResolvingMetadata
-): Promise<Metadata> {
-  const { username, slug } = params;
-
-  const codeFile = await db.code.findUnique({
-    where: { slug: `@${username}_${slug}` },
-    include: {
-      user: {
-        select: {
-          username: true,
-        },
-      },
-    },
-  });
-
-  if (!codeFile) {
-    return {
-      title: "Snippet Not Found",
-      description: "The code snippet you are looking for does not exist.",
-    };
-  }
-
-  const previousImages = (await parent).openGraph?.images || [];
-  const siteUrl = 'https://snipkit.bharatpanigrahi.com';
-
-  return {
-    title: `${codeFile.title} by @${username}`,
-    description: codeFile.description || `View and download the ${codeFile.language} code snippet: ${codeFile.title}`,
-    openGraph: {
-      title: `${codeFile.title} | Snipkit`,
-      description: codeFile.description || `A ${codeFile.language} code snippet by @${username}.`,
-      url: `${siteUrl}/code/${username}/${slug}`,
-      images: [
-        // You might want to generate dynamic OG images for snippets
-        ...previousImages,
-      ],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: `${codeFile.title} | Snipkit`,
-      description: codeFile.description || `A ${codeFile.language} code snippet by @${username}.`,
-      creator: `@${username}`, // assuming the username is the twitter handle
-      // images: ['/og-image-for-snippet.png'],
-    },
-  };
-}
-
 
 interface CodeViewerPageProps {
-  readonly params: {
+  readonly params: Promise<{
     username: string;
     slug: string;
-  };
+  }>;
 }
 
 export default async function CodeViewerPage({ params }: CodeViewerPageProps) {
-  const { username, slug } = params;
+  const { username, slug } = await params;
   const session = await getServerSession(authOptions);
 
   // Find the user

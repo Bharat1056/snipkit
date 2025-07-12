@@ -5,37 +5,18 @@ export function Footer() {
   return (
     <footer className="border-t bg-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="flex justify-between items-center">
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
               <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
                 <span className="text-primary-foreground font-bold text-sm transition-colors duration-200">P</span>
               </div>
-              <span className="font-bold text-xl transition-colors duration-200">Pieces</span>
+              <span className="font-bold text-xl transition-colors duration-200">Snipkit</span>
             </div>
             <p className="text-sm text-muted-foreground max-w-xs">
-              Build amazing applications with our modern development platform.
+              Snipkit is a platform for sharing code snippets.
             </p>
           </div>
-
-          <div className="space-y-4">
-            <h3 className="font-semibold">Product</h3>
-            <div className="space-y-2">
-              <Link href="#" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
-                Features
-              </Link>
-              <Link href="#" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
-                Pricing
-              </Link>
-              <Link href="#" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
-                Documentation
-              </Link>
-              <Link href="#" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
-                API Reference
-              </Link>
-            </div>
-          </div>
-
 
           <div className="space-y-4">
             <h3 className="font-semibold">Connect</h3>
@@ -61,10 +42,10 @@ export function Footer() {
             © 2025 Pieces. All rights reserved.
           </p>
           <div className="flex space-x-6 mt-4 sm:mt-0">
-            <Link href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+            <Link href="/privacy-policy" className="text-sm text-muted-foreground hover:text-primary transition-colors">
               Privacy Policy
             </Link>
-            <Link href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+            <Link href="/terms-of-service" className="text-sm text-muted-foreground hover:text-primary transition-colors">
               Terms of Service
             </Link>
           </div>
