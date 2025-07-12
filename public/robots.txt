@@ -1,0 +1,12 @@
+# See https://www.robotstxt.org/robotstxt.html for documentation on how to use the robots.txt file
+#
+# Allow crawling of all content
+User-agent: *
+Disallow:
+
+# Allow crawling of all content for Google
+User-agent: Googlebot
+Disallow:
+
+# Sitemap
+Sitemap: https://snipkit.bharatpanigrahi.com/sitemap.xml 

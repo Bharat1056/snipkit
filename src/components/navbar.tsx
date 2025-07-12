@@ -17,9 +17,9 @@ export function Navbar() {
           <div className="flex items-center flex-shrink-0">
             <Link href="/" className="flex items-center space-x-2">
               <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm transition-colors duration-200">P</span>
+                <span className="text-primary-foreground font-bold text-sm transition-colors duration-200">S</span>
               </div>
-              <span className="font-bold text-xl transition-colors duration-200">Pieces</span>
+              <span className="font-bold text-xl transition-colors duration-200">Snipkit</span>
             </Link>
           </div>
 
@@ -43,12 +43,12 @@ export function Navbar() {
                 Code
               </Link>
             )}
-            <Link 
+            {/* <Link 
               href="#contact" 
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
             >
               Contact
-            </Link>
+            </Link> */}
           </div>
 
           <div className="ml-auto flex items-center">
