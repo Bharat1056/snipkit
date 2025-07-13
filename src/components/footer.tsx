@@ -30,7 +30,7 @@ export function Footer() {
               <Link href="https://www.linkedin.com/in/bharat-panigrahi/" className="text-muted-foreground hover:text-primary transition-colors">
                 <Linkedin className="h-5 w-5" />
               </Link>
-              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <Link href="mailto:bharatpanigrahi225@gmail.com" className="text-muted-foreground hover:text-primary transition-colors">
                 <Mail className="h-5 w-5" />
               </Link>
             </div>

@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { FileText } from "lucide-react";
 import { Button } from "../ui/button";
-import { PublicCodeGallery } from "../code/code-gallery";
+import { PublicCodeGallery } from "../code/public-code-gallery";
 import React from "react";
 import Link from "next/link";
 
