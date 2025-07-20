@@ -179,7 +179,7 @@ export function CodeWriter({ onWriteComplete }: { onWriteComplete?: () => void }
   };
 
   const handleSubmit = async () => {
-    if (!title || !slug || !exploitLocation || !code) {
+    if (!title || !slug || !code) {
       setError("Please fill in all required fields");
       return;
     }
@@ -191,9 +191,8 @@ export function CodeWriter({ onWriteComplete }: { onWriteComplete?: () => void }
 
     try {
       const ext = extension.toLowerCase();
-      const lang = LANGUAGE_MAP[ext] || 'TEXT';
       const mime = getMimeType(ext);
-      const filename = (slug || "code") + extension;
+      const filename = (slug || "index") + extension;
       const file = new File([code], filename, { type: mime });
 
       // Step 1: Get upload URL
@@ -206,13 +205,14 @@ export function CodeWriter({ onWriteComplete }: { onWriteComplete?: () => void }
           title,
           description,
           slug,
-          filename,
-          contentType: mime,
-          fileSize: file.size,
           access,
-          exploitLocation,
-          language: lang,
-          codeContent: code,
+          downloadPath: exploitLocation,
+          files: [{
+            name: filename,
+            path: filename,
+            contentType: mime,
+            size: file.size,
+          }],
         }),
       });
 
@@ -227,7 +227,13 @@ export function CodeWriter({ onWriteComplete }: { onWriteComplete?: () => void }
         throw new Error(errorMessage);
       }
 
-      const { uploadUrl } = await response.json();
+      const { filesWithUrls } = await response.json();
+
+      if (!filesWithUrls || filesWithUrls.length === 0) {
+        throw new Error("Did not receive an upload URL from the server.");
+      }
+      
+      const { uploadUrl } = filesWithUrls[0];
 
       // Step 2: Upload to S3
       await axios.put(uploadUrl, file, {
@@ -242,18 +248,6 @@ export function CodeWriter({ onWriteComplete }: { onWriteComplete?: () => void }
           );
           setUploadProgress(percentCompleted);
         },
-      });
-
-      // Step 3: Confirm upload
-      await fetch("/api/code/upload", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          slug,
-          filename,
-        }),
       });
 
       setSuccess("Code uploaded successfully!");
@@ -410,7 +404,7 @@ export function CodeWriter({ onWriteComplete }: { onWriteComplete?: () => void }
 
       {/* Exploit Location */}
       <div className="space-y-2">
-        <Label htmlFor="exploitLocation">Exploit Location *</Label>
+        <Label htmlFor="exploitLocation">Exploit Location</Label>
         <Input
           id="exploitLocation"
           value={exploitLocation}
@@ -463,7 +457,7 @@ export function CodeWriter({ onWriteComplete }: { onWriteComplete?: () => void }
       {/* Submit Button */}
       <Button
         onClick={handleSubmit}
-        disabled={!title || !slug || !exploitLocation || !code || isUploading}
+        disabled={!title || !slug || !code || isUploading}
         className="w-full"
       >
         {isUploading ? (

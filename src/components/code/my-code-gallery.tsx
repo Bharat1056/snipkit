@@ -16,8 +16,6 @@ interface CodeFile {
   title: string;
   description?: string;
   slug: string;
-  language: string;
-  exploitLocation: string;
   access: string;
   createdAt: string;
   author: {
@@ -40,7 +38,6 @@ export const MyCodeGallery = forwardRef(function CodeGallery(props, ref) {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
-  const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
@@ -60,7 +57,7 @@ export const MyCodeGallery = forwardRef(function CodeGallery(props, ref) {
     }
     reset ? setLoading(true) : setLoadingMore(true);
     try {
-      let url = `/api/code/list?page=${reset ? 1 : page}&pageSize=${PAGE_SIZE}`;
+      let url = `/api/code/list?type=my&page=${reset ? 1 : page}&pageSize=${PAGE_SIZE}`;
       if (search) url += `&slug=${encodeURIComponent(search)}`;
       const response = await fetch(url);
       if (!response.ok) throw new Error("Failed to fetch code files");
@@ -95,18 +92,34 @@ export const MyCodeGallery = forwardRef(function CodeGallery(props, ref) {
   useImperativeHandle(ref, () => ({ refetch: () => fetchCodeFiles(true) }), [fetchCodeFiles]);
 
   const handleToggleAccess = async (file: CodeFile) => {
-    const newAccess = file.access === "public" ? "private" : "public";
-    setCodeFiles((prev) => prev.map((f) => (f.id === file.id ? { ...f, access: newAccess } : f)));
+    const originalAccess = file.access;
+    const newAccess = originalAccess === "public" ? "private" : "public";
+
+    setCodeFiles((prevFiles) =>
+      prevFiles.map((f) =>
+        f.id === file.id ? { ...f, access: newAccess } : f
+      )
+    );
+
     try {
-      const res = await fetch("/api/code", {
+      const response = await fetch("/api/code/access", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: file.id, access: newAccess }),
+        body: JSON.stringify({ codeId: file.id, access: newAccess }),
       });
-      if (!res.ok) throw new Error("Failed to update access");
-    } catch (e) {
-      setCodeFiles((prev) => prev.map((f) => (f.id === file.id ? { ...f, access: file.access } : f)));
-      toast.error("Failed to update access");
+
+      if (!response.ok) {
+        throw new Error("Failed to update access level");
+      }
+
+      toast.success(`Snippet is now ${newAccess}`);
+    } catch (error) {
+      setCodeFiles((prevFiles) =>
+        prevFiles.map((f) =>
+          f.id === file.id ? { ...f, access: originalAccess } : f
+        )
+      );
+      toast.error("Failed to update access. Please try again.");
     }
   };
 
@@ -195,11 +208,9 @@ export const MyCodeGallery = forwardRef(function CodeGallery(props, ref) {
                 currentUser={session?.user?.username ?? null}
                 onToggleAccess={() => handleToggleAccess(file)}
                 onDelete={() => handleDelete(file)}
-                downloadingId={downloadingId}
                 deletingId={deletingId}
                 confirmDeleteId={confirmDeleteId}
                 setConfirmDeleteId={setConfirmDeleteId}
-                setDownloadingId={setDownloadingId}
               />
             ))}
           </div>

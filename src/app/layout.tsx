@@ -80,7 +80,7 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <SessionWrapper>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-gradient-to-br from-gray-900 via-gray-800 to-black`}
       >
          <Navbar />
         <main className="flex-1">

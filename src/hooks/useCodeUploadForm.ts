@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios, { AxiosProgressEvent } from "axios";
 import { generateSlug } from "@/lib/utils";
+import { getContentType } from "@/lib/utils";
 
 interface UseCodeUploadFormProps {
   onUploadComplete?: () => void;
@@ -13,6 +14,7 @@ interface FormData {
   access: "public" | "private";
   downloadPath: string;
 }
+
 
 export function useCodeUploadForm({ onUploadComplete }: UseCodeUploadFormProps) {
   const [formData, setFormData] = useState<FormData>({
@@ -59,11 +61,13 @@ export function useCodeUploadForm({ onUploadComplete }: UseCodeUploadFormProps) 
     setSuccess(null);
     setUploadProgressMap({});
 
+
+
     try {
       const filesToUpload = selectedFiles.map((file) => ({
-        name: file.name,
+        name: file.name.split(" ").join("-"), // sanitize file name
         path: (file as any).webkitRelativePath || file.name,
-        contentType: file.type,
+        contentType: getContentType(file.name),
         size: file.size,
       }));
 
@@ -80,9 +84,9 @@ export function useCodeUploadForm({ onUploadComplete }: UseCodeUploadFormProps) 
 
           await axios.put(uploadUrl, file, {
             headers: {
-              "Content-Type": file.type,
+              "Content-Type": getContentType(file.name),
               "Cache-Control": "no-cache",
-              "Content-Disposition": `attachment; filename=\"${file.name}\"`,
+              "Content-Disposition": `attachment; filename="${file.name}"`,
             },
             onUploadProgress: (e: AxiosProgressEvent) => {
               const percent = Math.round((e.loaded * 100) / (e.total || 1));
@@ -93,14 +97,6 @@ export function useCodeUploadForm({ onUploadComplete }: UseCodeUploadFormProps) 
       );
 
       await Promise.all(uploadPromises);
-
-      try {
-        await axios.post("/api/code/signed-url", {
-          slug: formData.slug,
-        });
-      } catch (e) {
-        console.warn("Failed to fetch signed URLs:", e);
-      }
 
       setSuccess(`Project "${formData.title}" created successfully!`);
       setFormData({ title: "", description: "", slug: "", access: "public", downloadPath: "" });

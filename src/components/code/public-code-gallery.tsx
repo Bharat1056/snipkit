@@ -12,8 +12,6 @@ interface CodeFile {
   title: string;
   description?: string;
   slug: string;
-  language: string;
-  exploitLocation: string;
   access: string;
   createdAt: string;
   author: {
@@ -107,11 +105,9 @@ export function PublicCodeGallery() {
                 currentUser={null} // ✅ Public gallery, no current user control
                 onToggleAccess={() => {}}
                 onDelete={() => {}}
-                downloadingId={downloadingId}
                 deletingId={null}
                 confirmDeleteId={null}
                 setConfirmDeleteId={() => {}}
-                setDownloadingId={setDownloadingId}
               />
             ))}
           </div>

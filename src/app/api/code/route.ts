@@ -55,17 +55,15 @@ export async function POST(req: Request) {
       });
 
       const filesWithUrls = [];
-
       for (const file of files) {
         const { name, path, contentType, size } = file;
-
-        // Upload file to S3 (outside DB transaction)
         const uploadResponse = await s3Service.uploadFile({
           username: user.username,
           filename: name,
           slug: slug,
           contentType: contentType,
           fileSize: size,
+          path,
         });
 
         await tx.file.create({
@@ -74,6 +72,7 @@ export async function POST(req: Request) {
             size,
             codeId: code.id,
             key: uploadResponse.key,
+            path,
           },
         });
 

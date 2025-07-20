@@ -1,40 +1,76 @@
-import { Terminal, Upload, ClipboardList } from "lucide-react"
+import { Terminal, Upload, ClipboardList, Star, Zap, Shield, Brain, Focus, Heart } from "lucide-react"
 
 export const features = [
   {
-    icon: Upload,
-    iconBg: "bg-blue-500",
-    title: "CLI-First Snippet Upload",
+    icon: Brain,
+    title: "Save Your Mental Energy",
     description:
-      "Quickly save reusable code snippets directly from your terminal with one command.",
+      "Stop using your brain as a hard drive. Let Snipkit remember your code patterns while you focus on solving real problems.",
     points: [
-      "Cross-platform CLI tool",
-      "Language-agnostic snippet support",
-      "Instant push to cloud",
+      "🧠 Preserve cognitive resources",
+      "💡 Focus on creativity, not memory",
+      "⚡ Instant recall of any snippet",
     ],
+    badge: "STRESS-FREE"
+  },
+  {
+    icon: Focus,
+    title: "Never Break Your Flow",
+    description:
+      "Stay in the zone. No context switching, no browser hunting, no digging through old projects. Your snippets are right where you code.",
+    points: [
+      "🌊 Maintain deep work state",
+      "🎯 Zero context switching",
+      "💻 Everything in your terminal",
+    ],
+    badge: "FLOW STATE"
   },
   {
     icon: Terminal,
-    iconBg: "bg-green-500",
-    title: "Paste to Code Instantly",
+    title: "Terminal-First Design",
     description:
-      "No more hunting for snippets. Paste any snippet directly into your code editor from the terminal.",
+      "Built for developers who live in the command line. Search, save, and paste without ever leaving your development environment.",
     points: [
-      "Smart context awareness",
-      "Auto-format on paste",
-      "One-liner insert command",
+      "⚡ Lightning-fast CLI interface",
+      "🔍 Fuzzy search through thousands",
+      "📋 Direct paste to current file",
     ],
+    badge: "CLI NATIVE"
   },
   {
-    icon: ClipboardList,
-    iconBg: "bg-purple-500",
-    title: "Organized & Accessible",
+    icon: Zap,
+    title: "Instant Everything",
     description:
-      "Organize snippets by tags and access them from any machine using your unique CLI identity.",
+      "Millisecond search results. One-command saves. Zero-latency access. Because waiting breaks your momentum and kills creativity.",
     points: [
-      "Tag-based filtering",
-      "Encrypted cloud sync",
-      "Access from anywhere",
+      "⚡ Sub-second search results",
+      "🚀 One-command snippet saving",
+      "💨 Zero-latency cloud sync",
     ],
+    badge: "LIGHTNING FAST"
   },
+  {
+    icon: Heart,
+    title: "Anxiety-Free Coding",
+    description:
+      "No more 'I know I wrote this before' moments. Build your personal knowledge base and code with confidence, not fear.",
+    points: [
+      "😌 Never lose code solutions again",
+      "🔒 Your personal knowledge vault",
+      "💪 Code with confidence, not anxiety",
+    ],
+    badge: "CONFIDENCE BOOST"
+  },
+  {
+    icon: Shield,
+    title: "Your Code, Your Control",
+    description:
+      "Private snippets stay private. No data mining, no tracking, no selling your coding patterns. Just a tool that works for you.",
+    points: [
+      "🔒 Bank-level encryption everywhere",
+      "👁️ No tracking, no data mining",
+      "❤️ Free forever, no ulterior motives",
+    ],
+    badge: "PRIVACY FIRST"
+  }
 ]

@@ -11,18 +11,13 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
 
     const type = searchParams.get("type") || "all";
-    const userId = searchParams.get("userId");
     const page = parseInt(searchParams.get("page") || "1");
     const pageSize = parseInt(searchParams.get("pageSize") || `${PAGE_SIZE}`);
 
     let whereClause: any = {};
 
-    if (type === "private" && session?.user?.id) {
+    if (type === "my" && session?.user?.id) {
       whereClause.authorId = session.user.id;
-      whereClause.access = "private";
-    } else if (type === "user" && userId) {
-      whereClause.authorId = userId;
-      whereClause.access = "public";
     } else {
       whereClause.access = "public";
     }
@@ -45,7 +40,6 @@ export async function GET(req: Request) {
               id: true,
               name: true,
               key: true,
-              signedUrl: true,
               size: true,
             },
           },

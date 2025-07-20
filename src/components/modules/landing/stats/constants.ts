@@ -1,22 +1,26 @@
 export const stats = [
     {
-      value: "5K+",
-      color: "text-blue-600",
-      label: "Snippets uploaded via CLI",
+      value: "$0",
+      color: "text-green-400",
+      label: "Forever - No hidden costs",
+      description: "While competitors charge $50-100/month"
     },
     {
-      value: "20M+",
-      color: "text-green-600",
-      label: "Terminal pastes executed",
+      value: "∞",
+      color: "text-blue-400", 
+      label: "Unlimited snippets",
+      description: "No storage limits or premium tiers"
     },
     {
-      value: "99.99%",
-      color: "text-purple-600",
-      label: "CLI uptime & availability",
+      value: "10K+",
+      color: "text-purple-400",
+      label: "Happy developers",
+      description: "Saving $300+/year each"
     },
     {
       value: "30+",
-      color: "text-orange-600",
-      label: "Supported languages",
+      color: "text-orange-400",
+      label: "Languages supported",
+      description: "Full syntax highlighting, free"
     },
   ]

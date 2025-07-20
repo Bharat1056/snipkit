@@ -28,6 +28,8 @@ import {
   X,
   Code,
   FolderUp,
+  Files,
+  CloudUpload,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -61,90 +63,221 @@ export function CodeUpload({ onUploadComplete }: CodeUploadProps) {
   } = useCodeUploadForm({ onUploadComplete });
 
   return (
-    <Card className="w-full max-w-xl m-0 mt-3 mb-3 shadow-none border-none">
-      <CardHeader className="pb-1 px-6 pt-3">
-        <CardTitle className="text-lg">Upload Code File</CardTitle>
-        <CardDescription>
-          Upload any file or folder. Syntax highlighting is supported for common languages.
-        </CardDescription>
+    <Card className="w-full max-w-2xl">
+      <CardHeader className="space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="p-3 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600">
+            <CloudUpload className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <CardTitle className="text-xl font-bold text-white">Upload Code</CardTitle>
+            <CardDescription className="text-gray-400">
+              Upload files or folders with syntax highlighting support for common languages
+            </CardDescription>
+          </div>
+        </div>
       </CardHeader>
-      <CardContent className="space-y-6 px-6 pb-6">
-        {error && <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>}
-        {success && <Alert><AlertDescription>{success}</AlertDescription></Alert>}
+      
+      <CardContent className="space-y-6">
+        {/* Alerts */}
+        {error && (
+          <Alert variant="destructive" className="border-red-500/50 bg-red-500/10">
+            <AlertDescription className="text-red-400">{error}</AlertDescription>
+          </Alert>
+        )}
+        {success && (
+          <Alert className="border-green-500/50 bg-green-500/10">
+            <AlertDescription className="text-green-400">{success}</AlertDescription>
+          </Alert>
+        )}
 
-        <div className="space-y-2">
-          <Label>Select Code File(s) or Folder</Label>
+        {/* File Selection */}
+        <div className="space-y-3">
+          <Label className="text-white font-medium">Select Code File(s) or Folder</Label>
           <div className="flex items-center gap-2">
-            <Input ref={fileInputRef} type="file" onChange={handleFileSelect} disabled={isUploading} className="hidden" multiple />
-            <Input ref={folderInputRef} type="file" onChange={handleFileSelect} disabled={isUploading} className="hidden" />
+            <Input 
+              ref={fileInputRef} 
+              type="file" 
+              onChange={handleFileSelect} 
+              disabled={isUploading} 
+              className="hidden" 
+              multiple 
+            />
+            <Input 
+              ref={folderInputRef}
+              type="file" 
+              onChange={handleFileSelect} 
+              disabled={isUploading} 
+              className="hidden" 
+              multiple 
+              webkitdirectory="true"
+            />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" disabled={isUploading} className="w-full justify-start text-left font-normal">
-                  <Upload className="h-4 w-4 mr-2" />Select Files or Folder
+                <Button 
+                  variant="outline" 
+                  disabled={isUploading} 
+                  className="w-full justify-start text-left font-normal border-gray-600 bg-gray-700/50 text-gray-300 hover:bg-gray-600/50 hover:text-white"
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Select Files or Folder
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
-                  <Upload className="mr-2 h-4 w-4" />Select File(s)
+              <DropdownMenuContent className="border-gray-600 bg-gray-800/90 backdrop-blur-sm">
+                <DropdownMenuItem 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="text-gray-300 hover:bg-gray-700/50 hover:text-white"
+                >
+                  <Upload className="mr-2 h-4 w-4" />
+                  Select File(s)
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => folderInputRef.current?.click()}>
-                  <FolderUp className="mr-2 h-4 w-4" />Select Folder
+                <DropdownMenuItem 
+                  onClick={() => folderInputRef.current?.click()}
+                  className="text-gray-300 hover:bg-gray-700/50 hover:text-white"
+                >
+                  <FolderUp className="mr-2 h-4 w-4" />
+                  Select Folder
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
         </div>
 
+        {/* Selected Files */}
         {selectedFiles.length > 0 && (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <Label>Selected Files ({selectedFiles.length})</Label>
-              <Button variant="ghost" size="sm" onClick={clearFiles} disabled={isUploading}>Clear all</Button>
+              <div className="flex items-center gap-2">
+                <Files className="h-4 w-4 text-blue-400" />
+                <Label className="text-white font-medium">
+                  Selected Files ({selectedFiles.length})
+                </Label>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={clearFiles} 
+                disabled={isUploading}
+                className="text-gray-400 hover:text-white hover:bg-gray-700/50"
+              >
+                Clear All
+              </Button>
             </div>
-            <div className="flex flex-col gap-2 p-3 border rounded-lg bg-muted max-h-60 overflow-y-auto">
-              {selectedFiles.map((file, index) => {
-                const pathKey = (file as any).webkitRelativePath || file.name;
-                const percent = uploadProgressMap[pathKey] || 0;
-                return (
-                  <div key={index} className="flex items-center gap-2">
-                    <FileCode className="h-5 w-5 text-green-500 flex-shrink-0" />
-                    <span className="flex-1 text-sm break-all">{pathKey}</span>
-                    <span className="text-xs text-muted-foreground">{(file.size / 1024).toFixed(2)} KB</span>
-                    {isUploading ? (
-                      <CircularProgress value={percent} />
-                    ) : (
-                      <Button type="button" variant="ghost" size="icon" onClick={() => removeFile(file)} disabled={isUploading} className="h-6 w-6">
-                        <X className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                );
-              })}
+            
+            <div className="rounded-lg border border-gray-600/30 bg-gray-900/50 backdrop-blur-sm p-3 max-h-60 overflow-y-auto">
+              <div className="space-y-2">
+                {selectedFiles.map((file, index) => {
+                  const pathKey = (file as any).webkitRelativePath || file.name;
+                  const percent = uploadProgressMap[pathKey] || 0;
+                  return (
+                    <div key={index} className="flex items-center gap-3 p-2 rounded bg-gray-800/50">
+                      <FileCode className="h-4 w-4 text-green-400 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm text-white truncate" title={pathKey}>
+                          {pathKey}
+                        </div>
+                        <div className="text-xs text-gray-400">
+                          {(file.size / 1024).toFixed(2)} KB
+                        </div>
+                      </div>
+                      {isUploading ? (
+                        <CircularProgress value={percent} />
+                      ) : (
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => removeFile(file)} 
+                          disabled={isUploading} 
+                          className="h-8 w-8 text-gray-400 hover:text-red-400 hover:bg-red-500/10"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         )}
 
-        <div className="space-y-3">
-          <Label>Title *</Label>
-          <Input value={formData.title} onChange={(e) => handleTitleChange(e.target.value)} placeholder="Enter a title for your code" disabled={isUploading} />
-          <Label>Slug *</Label>
-          <Input value={formData.slug} onChange={(e) => setFormData((prev) => ({ ...prev, slug: e.target.value }))} placeholder="my-awesome-function" disabled={isUploading} />
-          <Label>Download Path</Label>
-          <Textarea value={formData.downloadPath} onChange={(e) => setFormData((prev) => ({ ...prev, downloadPath: e.target.value }))} placeholder="Optional download path" disabled={isUploading} />
-          <Label>Description</Label>
-          <Textarea value={formData.description} onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))} placeholder="Optional description" disabled={isUploading} />
-          <Label>Access</Label>
-          <Select value={formData.access} onValueChange={(value: "public" | "private") => setFormData((prev) => ({ ...prev, access: value }))} disabled={isUploading}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="public">Public</SelectItem>
-              <SelectItem value="private">Private</SelectItem>
+        {/* Form Fields */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label className="text-white font-medium">Title *</Label>
+            <Input 
+              value={formData.title} 
+              onChange={(e) => handleTitleChange(e.target.value)} 
+              placeholder="Enter a title for your code" 
+              disabled={isUploading}
+              className="border-gray-600 bg-gray-700/50 text-white placeholder:text-gray-500"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label className="text-white font-medium">Slug *</Label>
+            <Input 
+              value={formData.slug} 
+              onChange={(e) => setFormData((prev) => ({ ...prev, slug: e.target.value }))} 
+              placeholder="my-awesome-function" 
+              disabled={isUploading}
+              className="border-gray-600 bg-gray-700/50 text-white placeholder:text-gray-500"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-white font-medium">Description</Label>
+          <Textarea 
+            value={formData.description} 
+            onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))} 
+            placeholder="Optional description of your code" 
+            disabled={isUploading}
+            className="border-gray-600 bg-gray-700/50 text-white placeholder:text-gray-500 resize-none"
+            rows={3}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-white font-medium">Access</Label>
+          <Select 
+            value={formData.access} 
+            onValueChange={(value: "public" | "private") => setFormData((prev) => ({ ...prev, access: value }))} 
+            disabled={isUploading}
+          >
+            <SelectTrigger className="border-gray-600 bg-gray-700/50 text-white">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="border-gray-600 bg-gray-800/90 backdrop-blur-sm">
+              <SelectItem value="public" className="text-gray-300 hover:bg-gray-700/50 hover:text-white">
+                Public
+              </SelectItem>
+              <SelectItem value="private" className="text-gray-300 hover:bg-gray-700/50 hover:text-white">
+                Private
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        <Button onClick={handleUpload} disabled={selectedFiles.length === 0 || !formData.title || !formData.slug || isUploading} className="w-full">
-          {isUploading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Uploading...</>) : (<><Code className="mr-2 h-4 w-4" />Upload Code</>)}
+        {/* Upload Button */}
+        <Button 
+          onClick={handleUpload} 
+          disabled={selectedFiles.length === 0 || !formData.title || !formData.slug || isUploading} 
+          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium"
+          size="lg"
+        >
+          {isUploading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Uploading...
+            </>
+          ) : (
+            <>
+              <Code className="mr-2 h-4 w-4" />
+              Upload Code
+            </>
+          )}
         </Button>
       </CardContent>
     </Card>

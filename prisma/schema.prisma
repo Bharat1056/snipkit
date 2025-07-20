@@ -16,13 +16,21 @@ model User {
   folderStructure Json?
   codes           Code[] @relation("UserCodes")
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  accounts  Account[]
-  sessions  Session[]
-  // Optional for email/password authentication
+  // Security fields - made optional for existing users
+  lastLoginAt            DateTime?
+  loginAttempts          Int?      @default(0)
+  lockedUntil            DateTime?
+  emailVerified          Boolean?  @default(false)
+  emailVerificationToken String?
 
-  // Optional for WebAuthn support
+  // Audit fields - made optional for existing users
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  lastPasswordChange DateTime?
+
+  // NextAuth fields
+  accounts       Account[]
+  sessions       Session[]
   authenticators Authenticator[]
 }
 
@@ -103,11 +111,11 @@ model Code {
 }
 
 model File {
-  id        String  @id @default(auto()) @map("_id") @db.ObjectId
-  name      String
-  key       String?
-  size      Int
-  signedUrl String?
+  id   String  @id @default(auto()) @map("_id") @db.ObjectId
+  name String
+  key  String?
+  size Int
+  path String  @default(".")
 
   codeId String @db.ObjectId
   code   Code   @relation(fields: [codeId], references: [id], onDelete: Cascade)
@@ -119,4 +127,14 @@ model File {
 enum Access {
   private
   public
+}
+
+// Rate limiting model
+model RateLimit {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  key       String   @unique // IP address or user ID
+  attempts  Int      @default(1)
+  resetTime DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

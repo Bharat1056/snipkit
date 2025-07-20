@@ -27,10 +27,14 @@ export interface FileUploadRequest {
   contentType: string;
   fileSize: number;
   metadata?: Record<string, string>;
+  path?: string;
 }
 
 export interface GetSignedDownloadUrlRequest {
   key: string;
+  expiresIn?: number;
+  disposition?: "inline" | "attachment";
+  filename?: string;
 }
 
 export interface FileDeletionRequest {

@@ -1,26 +1,18 @@
-import Features from "@/components/modules/landing/features/features"
-import Stats from "@/components/modules/landing/stats/stats"
-import Cta from "@/components/modules/landing/cts/cta"
+"use client"
+
 import Hero from "@/components/modules/landing/hero/Hero"
-import LandingPageWalkthrough from "@/components/step-actions"
+import WhyFreeFeatures from "@/components/modules/landing/why-free/why-free"
+import CTA from "@/components/modules/landing/cts/cta"
+import { useAestheticAnimations } from "@/hooks/useAestheticAnimations"
 
 export default function Home() {
+  useAestheticAnimations()
+
   return (
-    <div className="min-h-screen bg-background">
-     
-      {/* Hero Section */}
+    <main className="min-h-screen">
       <Hero />
-
-      {/* Features Section */}
-      <Features />
-
-      <LandingPageWalkthrough />
-
-      {/* Stats Section */}
-      <Stats />
-
-      {/* CTA Section */}
-      <Cta />
-    </div>
+      <WhyFreeFeatures />
+      <CTA />
+    </main>
   )
 }

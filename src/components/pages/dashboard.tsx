@@ -16,8 +16,10 @@ const Dashboard: React.FC = () => {
           <div className="container mx-auto px-4 mt-10">
             {/* Header */}
             <div className="mb-8">
-              <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
-                <p className="text-muted-foreground">
+              <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                Dashboard
+              </h1>
+                <p className="text-gray-400">
                   Welcome back, {session?.user?.username ?? "User"}!
                 </p>
             </div>
@@ -26,7 +28,9 @@ const Dashboard: React.FC = () => {
               <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
-                        <FileText className="h-5 w-5" />
+                        <div className="p-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600">
+                          <FileText className="h-5 w-5 text-white" />
+                        </div>
                         My Codes
                       </CardTitle>
                       <CardDescription>
@@ -34,7 +38,7 @@ const Dashboard: React.FC = () => {
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <Button asChild variant="outline" className="w-full">
+                      <Button asChild variant="outline" className="w-full border-gray-600 bg-gray-700/50 text-gray-300 hover:bg-gray-600/50 hover:text-white">
                         <Link href="/code">View Codes</Link>
                       </Button>
                     </CardContent>

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { ProjectDetail } from "@/components/code/projct-details";
 import { db } from "@/lib/db";
+import { formatFileSize } from "@/lib/utils";
 
 export default async function ProjectDetailPage({
   params,
@@ -40,14 +41,14 @@ export default async function ProjectDetailPage({
       username={username}
       title={code.title}
       description={code.description}
-      downloadPath={code.downloadPath ?? ""}
+      downloadPath={code.downloadPath === "" ? "/" : code.downloadPath as string}
       access={code.access}
       files={code.files.map((f) => ({
         id: f.id,
         name: f.name,
         key: f.key ?? "",
-        signedUrl: f.signedUrl,
-        size: f.size,
+        path: f.path ?? "",
+        size: formatFileSize(f.size),
       }))}
     />
   );

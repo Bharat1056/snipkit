@@ -1,59 +1,58 @@
-import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
+import { notFound } from "next/navigation";
 import { FileViewer } from "@/components/code/project-viewer";
-import { GetObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import s3Client from "@/s3/client";
+import { getSignedDownloadUrl } from "@/s3/function";
 
-interface FileViewerPageProps {
-  params: Promise<{
-    username: string;
-    codename: string;
-    filename: string
-  }>;
-}
-
-export default async function FileViewerPage({
+export default async function CodeFilePage({
   params,
-}: FileViewerPageProps) {
+  }: {
+    params: Promise<{ username: string; codename: string; filename: string }>;
+}) {
   const { username, codename, filename } = await params;
-  console.log(username, codename, filename);
-  // Fetch user
-  const user = await db.user.findUnique({
-    where: { username },
-  });
 
-  if (!user) notFound();
+  if (!username || !codename || !filename) {
+    return notFound();
+  }
 
-  // Fetch project
+  const user = await db.user.findUnique({ where: { username } });
+  if (!user) {
+    return notFound();
+  }
+
   const code = await db.code.findFirst({
-    where: {
-      authorId: user.id,
-      title: codename,
-    },
-    include: {
-      files: true,
-    },
+    where: { authorId: user.id, title: codename },
+    include: { files: { where: { name: filename } } },
   });
 
-  if (!code) notFound();
+  const file = code?.files[0];
 
-  // Find the file
-  const file = code.files.find((f) => f.id === filename);
+  if (!code || !file) {
+    return notFound();
+  }
 
-  if (!file) notFound();
+  const viewUrl = await getSignedDownloadUrl({
+    key: file.key as string,
+    expiresIn: 3600, // 1 hour
+  });
 
-  // Fetch file content
-  const fileResponse = await fetch(file.signedUrl ?? "");
-  const content = await fileResponse.text();
+  const downloadUrl = await getSignedDownloadUrl({
+    key: file.key as string,
+    expiresIn: 3600, // 1 hour
+    disposition: "attachment",
+    filename: file.name,
+  });
+
+  const response = await fetch(viewUrl);
+  const fileContent = await response.text();
 
   return (
     <FileViewer
-      code={content}
+      code={fileContent}
       filename={file.name}
-      author={user.username}
+      author={username}
       createdAt={code.createdAt.toISOString()}
-      downloadUrl={file.signedUrl ?? ""}
+      downloadUrl={downloadUrl}
+      path={file.path}  
     />
   );
 }

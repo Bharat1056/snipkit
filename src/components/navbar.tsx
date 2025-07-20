@@ -3,70 +3,78 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { usePathname } from "next/navigation"
-import { useSession, signOut } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react"
 
 export function Navbar() {
-  const pathname = usePathname();
-  const { data: session, status } = useSession();
+  const pathname = usePathname()
+  const { data: session, status } = useSession()
 
   return (
-    <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <nav className="border-b bg-transparent shadow-lg">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative flex h-16 items-center">
+        <div className="flex h-16 items-center justify-between">
           {/* Left: Logo */}
-          <div className="flex items-center flex-shrink-0">
+          <div className="flex-shrink-0">
             <Link href="/" className="flex items-center space-x-2">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm transition-colors duration-200">S</span>
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
+                <span className="text-white font-bold text-sm">S</span>
               </div>
-              <span className="font-bold text-xl transition-colors duration-200">Snipkit</span>
+              <span className="font-bold text-xl text-white">Snipkit</span>
             </Link>
           </div>
 
           {/* Center: Nav buttons */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center space-x-8">
-            <Link 
-              href={!session ? "/" : "/dashboard"} 
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                pathname === "/" ? "text-primary" : "text-muted-foreground"
-              }`}
-            >
-              Home
-            </Link>
-            {session?.user && (
-              <Link 
-                href="/code" 
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  pathname === "/code" ? "text-primary" : "text-muted-foreground"
-                }`}
+          <div className="flex-grow flex justify-center">
+            <div className="hidden md:flex items-center space-x-1">
+              <Button
+                variant={pathname === '/' ? "secondary" : "ghost"}
+                size="sm"
+                asChild
+                className={pathname === '/' ? "bg-gray-700/50 text-white" : "text-gray-300 hover:text-white hover:bg-gray-700/50"}
               >
-                Code
-              </Link>
-            )}
-            {/* <Link 
-              href="#contact" 
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-            >
-              Contact
-            </Link> */}
+                <Link href="/">Home</Link>
+              </Button>
+              <Button
+                variant={pathname === '/code' ? "secondary" : "ghost"}
+                size="sm"
+                asChild
+                className={pathname === '/code' ? "bg-gray-700/50 text-white" : "text-gray-300 hover:text-white hover:bg-gray-700/50"}
+              >
+                <Link href="/code">Code</Link>
+              </Button>
+            </div>
           </div>
 
-          <div className="ml-auto flex items-center">
-            {status === "authenticated" && session?.user ? (
+          {/* Right: Auth buttons */}
+          <div className="flex-shrink-0 flex items-center space-x-3">
+            {status === "loading" ? (
+              <div className="w-20 h-8 bg-gray-700/50 animate-pulse rounded"></div>
+            ) : session ? (
               <>
-                <span className="text-sm font-medium text-muted-foreground">
-                  {session.user.username}
-                </span>
-                <Button variant="ghost" onClick={() => signOut({ callbackUrl: "/" })}>
-                  Logout
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                  className="border-gray-600 bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 hover:text-white"
+                >
+                  Sign Out
                 </Button>
               </>
             ) : (
               <>
-                <Button variant="ghost" asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  asChild
+                  className="text-gray-300 hover:text-white hover:bg-gray-700/50"
+                >
                   <Link href="/sign-in">Sign In</Link>
                 </Button>
-                <Button asChild>
+                <Button
+                  size="sm"
+                  asChild
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+                >
                   <Link href="/sign-up">Sign Up</Link>
                 </Button>
               </>
@@ -76,4 +84,4 @@ export function Navbar() {
       </div>
     </nav>
   )
-} 
+}

@@ -52,28 +52,28 @@ export default function LandingPageWalkthrough() {
           <span
             key={idx}
             className={`h-3 w-3 rounded-full transition-all duration-200 ease-in-out ${
-              idx === step ? "bg-purple-500 scale-110" : "bg-gray-700"
+              idx === step ? "bg-gradient-to-r from-blue-500 to-purple-600 scale-110" : "bg-gray-600"
             }`}
           />
         ))}
       </div>
       {/* Step Card */}
-      <div className="bg-zinc-900/90 rounded-2xl shadow-2xl max-w-xl w-full p-8 flex flex-col items-center">
+      <div className="bg-gray-800/90 backdrop-blur-sm border border-gray-700/50 rounded-2xl shadow-2xl max-w-xl w-full p-8 flex flex-col items-center">
         <div className="relative w-full h-64 flex items-center justify-center mb-6">
           <Image
             src={steps[step].img}
             alt={`Step ${step + 1}`}
-            className="w-full h-64 object-contain rounded-lg border border-zinc-800 shadow-md bg-zinc-800"
-            style={{ background: "#18181b" }}
+            className="w-full h-64 object-contain rounded-lg border border-gray-700 shadow-md bg-gray-800"
+            style={{ background: "#1f2937" }}
             layout="fill"
           />
           {/* Optional: animated arrow overlay can go here */}
           {steps[step].arrow}
         </div>
-        <h2 className="text-2xl font-bold mb-2 text-white text-center">
+        <h2 className="text-2xl font-bold mb-2 text-center bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
           Step {step + 1}: {steps[step].title}
         </h2>
-        <p className="mb-6 text-zinc-200 text-center text-base">
+        <p className="mb-6 text-gray-300 text-center text-base">
           {steps[step].desc}
         </p>
         {/* Navigation Buttons */}

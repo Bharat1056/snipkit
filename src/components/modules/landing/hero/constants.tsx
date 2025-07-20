@@ -1,28 +1,36 @@
-import { Zap } from "lucide-react"
+import { Heart, Zap } from "lucide-react"
 
 export const hero = {
   badge: {
-    text: "Now in Beta",
-    icon: Zap,
+    text: "100% Free Forever",
+    icon: Heart,
   },
   title: (
     <>
-      Build faster in your{" "}
-      <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-        terminal
+      Code Without{" "}
+      <span className="bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">
+        STRESS
       </span>
+      , Stay in Your Terminal
     </>
   ),
   description:
-    "A modern CLI-first snippet manager that lets you save, share, and paste reusable code directly into your editor — from any terminal, anywhere.",
+    "Stop breaking your flow to search for code snippets. Never leave your terminal again. Focus on building, not hunting for that perfect function you wrote last month.",
   cta: {
     primary: {
-      label: "Get started for free",
-      href: "/dashboard",
+      label: "Start Stress-Free Coding",
+      href: "/code",
     },
     secondary: {
-      label: "Learn more",
-      href: "#features",
+      label: "See How It Works",
+      href: "#why-free",
     },
   },
+  freeFeatures: [
+    "💻 Never leave terminal",
+    "⚡ Instant snippet access",
+    "🧠 Less mental overhead",
+    "🔍 Lightning-fast search",
+    "❤️ Zero stress, zero cost"
+  ]
 }

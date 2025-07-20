@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { s3Service } from "@/s3/service";
 import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
@@ -46,6 +47,10 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "File not found." }, { status: 404 });
     }
 
+    const signedUrl = await s3Service.getSignedDownloadUrl({
+      key: file.key as string,
+    });
+
     return NextResponse.json({
       name: file.name,
       size: file.size,
@@ -53,7 +58,7 @@ export async function GET(req: Request) {
       author: user.username,
       access: code.access,
       title: code.title,
-      signedUrl: file.signedUrl,
+      signedUrl: signedUrl,
     });
   } catch (err) {
     console.error("API Error:", err);
