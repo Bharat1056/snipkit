@@ -1,4 +1,4 @@
-import { Heart, Zap } from "lucide-react"
+import { Heart } from "lucide-react"
 
 export const hero = {
   badge: {

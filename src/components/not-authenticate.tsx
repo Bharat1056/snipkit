@@ -36,7 +36,7 @@ export default function NotAuthenticate() {
               <span className="w-full border-t border-gray-700" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-gray-800 px-2 text-gray-500">Don't have an account?</span>
+              <span className="bg-gray-800 px-2 text-gray-500">Don&apos;t have an account?</span>
             </div>
           </div>
           

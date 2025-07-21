@@ -167,7 +167,7 @@ export function CodeUpload({ onUploadComplete }: CodeUploadProps) {
             <div className="rounded-lg border border-gray-600/30 bg-gray-900/50 backdrop-blur-sm p-3 max-h-60 overflow-y-auto">
               <div className="space-y-2">
                 {selectedFiles.map((file, index) => {
-                  const pathKey = (file as any).webkitRelativePath || file.name;
+                  const pathKey = (file as any).webkitRelativePath || file.name; // eslint-disable-line @typescript-eslint/no-explicit-any
                   const percent = uploadProgressMap[pathKey] || 0;
                   return (
                     <div key={index} className="flex items-center gap-3 p-2 rounded bg-gray-800/50">

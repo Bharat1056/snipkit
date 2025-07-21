@@ -1,4 +1,4 @@
-import { Terminal, Upload, ClipboardList, Star, Zap, Shield, Brain, Focus, Heart } from "lucide-react"
+import { Terminal, Zap, Shield, Brain, Focus, Heart } from "lucide-react"
 
 export const features = [
   {

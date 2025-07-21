@@ -66,7 +66,7 @@ export function useCodeUploadForm({ onUploadComplete }: UseCodeUploadFormProps) 
     try {
       const filesToUpload = selectedFiles.map((file) => ({
         name: file.name.split(" ").join("-"), // sanitize file name
-        path: (file as any).webkitRelativePath || file.name,
+        path: (file as any).webkitRelativePath || file.name, // eslint-disable-line @typescript-eslint/no-explicit-any
         contentType: getContentType(file.name),
         size: file.size,
       }));
@@ -78,7 +78,7 @@ export function useCodeUploadForm({ onUploadComplete }: UseCodeUploadFormProps) 
       const uploadPromises = filesWithUrls.map(
         async ({ path, uploadUrl }: { path: string; uploadUrl: string }) => {
           const file = selectedFiles.find(
-            (f) => ((f as any).webkitRelativePath || f.name) === path
+            (f) => ((f as any).webkitRelativePath || f.name) === path // eslint-disable-line @typescript-eslint/no-explicit-any
           );
           if (!file) return;
 
@@ -103,7 +103,7 @@ export function useCodeUploadForm({ onUploadComplete }: UseCodeUploadFormProps) 
       setSelectedFiles([]);
 
       if (onUploadComplete) onUploadComplete();
-    } catch (err: any) {
+    } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       console.error("Upload error:", err);
       setError(err?.response?.data?.error || err.message || "Upload failed");
     } finally {

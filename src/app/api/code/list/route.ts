@@ -14,7 +14,7 @@ export async function GET(req: Request) {
     const page = parseInt(searchParams.get("page") || "1");
     const pageSize = parseInt(searchParams.get("pageSize") || `${PAGE_SIZE}`);
 
-    const whereClause: any = {};
+    const whereClause: any = {}; // eslint-disable-line @typescript-eslint/no-explicit-any
 
     if (type === "my" && session?.user?.id) {
       whereClause.authorId = session.user.id;
