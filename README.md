@@ -1,8 +1,8 @@
-# Pieces
+# Snipkit
 
 ## Overview
 
-Pieces is a modern web application designed for developers to effortlessly store, manage, and share their code snippets. Whether you're uploading a file or writing code directly in our feature-rich editor, Pieces provides a centralized and secure platform for all your coding needs. Browse public snippets for inspiration or keep your work private in your personal dashboard.
+Snipkit is a modern web application designed for developers to effortlessly store, manage, and share their code snippets. Whether you're uploading a file or writing code directly in our feature-rich editor, Snipkit provides a centralized and secure platform for all your coding needs. Browse public snippets for inspiration or keep your work private in your personal dashboard.
 
 ## Key Features
 
@@ -39,8 +39,8 @@ Follow these instructions to get a copy of the project up and running on your lo
 1.  **Clone the repository:**
 
     ```bash
-    git clone https://github.com/your-username/pieces.git
-    cd pieces
+    git clone https://github.com/your-username/Snipkit.git
+    cd Snipkit
     ```
 
 2.  **Install dependencies:**
@@ -83,4 +83,5 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 # Test
 
 # Another test
+
 # Test invalid message
