@@ -32,35 +32,12 @@ const generateFileKey = (username: string, slug: string, filename: string): stri
   return `${PATH_CONFIG.userUploads}/${username}/${slug}-${timestamp}-${sanitizedFilename}`;
 };
 
-const validateFileSize = (fileSize: number): void => {
-  if (fileSize > UPLOAD_CONFIG.maxFileSize) {
-    throw new S3ServiceError(
-      `File size ${fileSize} bytes exceeds maximum allowed size of ${UPLOAD_CONFIG.maxFileSize} bytes`,
-      "FILE_SIZE_EXCEEDED"
-    );
-  }
-};
-
-const validateContentType = (contentType: string): void => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if (!UPLOAD_CONFIG.allowedContentTypes.includes(contentType as any)) {
-    throw new S3ServiceError(
-      `Content type '${contentType}' is not allowed`,
-      "INVALID_CONTENT_TYPE"
-    );
-  }
-};
-
 export const uploadFile = async (
   request: FileUploadRequest
 ): Promise<FileUploadResponse> => {
   try {
     // Validate input
     const validatedRequest = FileUploadSchema.parse(request);
-    
-    // Validate file size and content type
-    validateFileSize(validatedRequest.fileSize);
-    validateContentType(validatedRequest.contentType);
     
     // Generate unique key
     const key = generateFileKey(
@@ -169,14 +146,22 @@ export const listFiles = async (
 export const getSignedDownloadUrl = async (
   request: GetSignedDownloadUrlRequest
 ): Promise<string> => {
+  const { key, expiresIn, disposition = "inline", filename } = request;
+
+  let contentDisposition: string = disposition;
+  if (disposition === "attachment" && filename) {
+    contentDisposition = `attachment; filename="${filename}"`;
+  }
 
   const command = new GetObjectCommand({
     Bucket: AWS_CONFIG.bucketName,
-    Key: request.key,
-    ResponseContentDisposition: "inline",
+    Key: key,
+    ResponseContentDisposition: contentDisposition,
   });
 
-  const downloadUrl = await getSignedUrl(s3Client, command);
+  const downloadUrl = await getSignedUrl(s3Client, command, {
+    expiresIn: expiresIn ?? 60 * 60,
+  });
 
   return downloadUrl;
 };

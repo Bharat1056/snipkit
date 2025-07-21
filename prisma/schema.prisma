@@ -8,22 +8,29 @@ datasource db {
 }
 
 model User {
-  id              String  @id @default(auto()) @map("_id") @db.ObjectId
-  email           String  @unique
-  username        String  @unique
+  id              String @id @default(auto()) @map("_id") @db.ObjectId
+  email           String @unique
+  username        String @unique
   fullName        String
   password        String
   folderStructure Json?
-  codes           Code[]  @relation("UserCodes")
-  media           Media[] @relation("UserMedia")
+  codes           Code[] @relation("UserCodes")
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  accounts  Account[]
-  sessions  Session[]
-  // Optional for email/password authentication
+  // Security fields - made optional for existing users
+  lastLoginAt            DateTime?
+  loginAttempts          Int?      @default(0)
+  lockedUntil            DateTime?
+  emailVerified          Boolean?  @default(false)
+  emailVerificationToken String?
 
-  // Optional for WebAuthn support
+  // Audit fields - made optional for existing users
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  lastPasswordChange DateTime?
+
+  // NextAuth fields
+  accounts       Account[]
+  sessions       Session[]
   authenticators Authenticator[]
 }
 
@@ -86,57 +93,48 @@ model Authenticator {
 }
 
 model Code {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  slug            String   @unique
-  title           String
-  description     String?
-  s3Key           String
-  language        Language @default(JAVASCRIPT)
-  exploitLocation String
-  access          Access   @default(public)
+  id           String  @id @default(auto()) @map("_id") @db.ObjectId
+  slug         String
+  title        String
+  description  String?
+  downloadPath String?
+  access       Access  @default(public)
+  files        File[]
 
-  userId String @db.ObjectId
-  user   User?  @relation("UserCodes", fields: [userId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Media {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  slug        String    @unique
-  title       String
-  description String?
-  filename    String
-  s3Key       String
-  contentType String
-  fileSize    Int
-  mediaType   MediaType
-  access      Access    @default(public)
-  signedUrl   String?
-
-  userId String @db.ObjectId
-  user   User?  @relation("UserMedia", fields: [userId], references: [id])
+  authorId String @db.ObjectId
+  author   User   @relation("UserCodes", fields: [authorId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([authorId, slug])
 }
 
-enum Language {
-  JAVASCRIPT
-  TYPESCRIPT
-  PYTHON
-  GO
-  RUST
-  JAVA
-}
+model File {
+  id   String  @id @default(auto()) @map("_id") @db.ObjectId
+  name String
+  key  String?
+  size Int
+  path String  @default(".")
 
-enum MediaType {
-  IMAGE
-  VIDEO
+  codeId String @db.ObjectId
+  code   Code   @relation(fields: [codeId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum Access {
   private
   public
+}
+
+// Rate limiting model
+model RateLimit {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  key       String   @unique // IP address or user ID
+  attempts  Int      @default(1)
+  resetTime DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

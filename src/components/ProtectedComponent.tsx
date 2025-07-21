@@ -12,7 +12,5 @@ export const ProtectedComponent = ({children}: { children: React.ReactNode }) =>
 
     if (!session) return <NotAuthenticate />
 
-    return (
-        {children}
-    )
+    return children;
 }

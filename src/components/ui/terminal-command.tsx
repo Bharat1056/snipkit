@@ -1,39 +1,46 @@
-"use client"
-import React, { useState } from "react";
+"use client";
+
+import { useState } from "react";
+import { Copy, Check } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 interface TerminalCommandProps {
   command: string;
 }
 
-const TerminalCommand: React.FC<TerminalCommandProps> = ({ command }) => {
-  const [copied, setCopied] = useState(false);
+export function TerminalCommand({ command }: TerminalCommandProps) {
+  const [hasCopied, setHasCopied] = useState(false);
 
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(command);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(command);
+    setHasCopied(true);
+    toast.success("Copied!");
+    setTimeout(() => setHasCopied(false), 2000);
   };
 
   return (
-    <div
-      className="flex items-center bg-background border border-border rounded-lg px-4 py-2 font-mono text-sm text-foreground shadow-sm max-w-full transition-colors duration-300"
-      style={{ minWidth: 260 }}
-    >
-      <span className="select-all flex-1 break-all">{command}</span>
-      <button
-        onClick={handleCopy}
-        className={`ml-3 px-3 py-1 rounded-md border border-zinc-300 dark:border-zinc-700 transition-colors text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-zinc-100 dark:focus:ring-offset-zinc-900 ${
-          copied
-            ? "bg-success text-success-foreground border-success"
-            : "bg-background text-foreground hover:bg-muted hover:text-primary transition-colors duration-300"
-        }`}
-        aria-label="Copy command"
-        type="button"
+    <div className="relative overflow-hidden rounded-lg bg-[#0d0d0d] font-mono text-sm ring-1 ring-white/10 flex items-center px-1">
+      <code
+        className="block whitespace-nowrap overflow-x-auto py-3 pl-4 pr-14 text-gray-300 scrollbar-thin scrollbar-thumb-neutral-700"
       >
-        {copied ? "Copied!" : "Copy"}
-      </button>
+        <span className="mr-2 text-white/40">$</span>
+        {command}
+      </code>
+
+      <Button
+        aria-label="Copy to clipboard"
+        variant="ghost"
+        size="icon"
+        onClick={handleCopy}
+        className="h-9 w-9 p-0 text-gray-400 hover:text-white focus-visible:ring-2 focus-visible:ring-emerald-500"
+      >
+        {hasCopied ? (
+          <Check className="h-4 w-4 text-emerald-500" />
+        ) : (
+          <Copy className="h-4 w-4" />
+        )}
+      </Button>
     </div>
   );
-};
-
-export default TerminalCommand; 
+}

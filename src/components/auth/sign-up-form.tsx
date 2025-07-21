@@ -7,35 +7,48 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Eye, EyeOff, Loader2 } from "lucide-react"
-import { signUpSchema, type SignUpFormData } from "@/lib/validations/auth"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Progress } from "@/components/ui/progress"
+import { Badge } from "@/components/ui/badge"
+import { Eye, EyeOff, Loader2, User, Mail, Lock, AlertTriangle, Check, X, UserPlus } from "lucide-react"
+import { signUpSchema, type SignUpFormData, validatePasswordStrength } from "@/lib/validations/auth"
 import axios from "axios"
 import debounce from "lodash.debounce"
-import GoogleSignInButton from "@/components/ui/googlebutton"
 
 export function SignUpForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
   const [username, setUsername] = useState("")
   const [usernameError, setUsernameError] = useState<string | null>(null)
   const [isCheckingUsername, setIsCheckingUsername] = useState(false)
+  const [passwordStrength, setPasswordStrength] = useState(validatePasswordStrength(""))
   const router = useRouter()
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-  } = useForm<SignUpFormData>({
+  const form = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema),
+    defaultValues: {
+      name: "",
+      username: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+    mode: "onChange"
   })
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const watchPassword = form.watch("password", "")
+
+  // Update password strength in real-time
+  useEffect(() => {
+    setPasswordStrength(validatePasswordStrength(watchPassword))
+  }, [watchPassword])
+
+  // Debounced username check
   const checkUsername = useCallback(
     debounce(async (newUsername: string) => {
       if (!newUsername) {
@@ -43,21 +56,24 @@ export function SignUpForm() {
         setIsCheckingUsername(false)
         return
       }
-      if (/\s/.test(newUsername)) {
-        setUsernameError("Username cannot contain spaces.")
+      
+      if (newUsername.length < 3) {
+        setUsernameError("Username must be at least 3 characters long")
         setIsCheckingUsername(false)
         return
       }
+
       setIsCheckingUsername(true)
       try {
         const { data } = await axios.post("/api/user/username-check", { username: newUsername })
         if (data.exists) {
-          setUsernameError("Username is already taken.")
+          setUsernameError("Username is already taken")
         } else {
           setUsernameError(null)
         }
-      } catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
-        setUsernameError("Error checking username.")
+      } catch (error) {
+        console.error("Username check error:", error)
+        setUsernameError("Error checking username availability")
       } finally {
         setIsCheckingUsername(false)
       }
@@ -69,175 +85,379 @@ export function SignUpForm() {
     checkUsername(username)
   }, [username, checkUsername])
 
-  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newUsername = e.target.value
+  const handleUsernameChange = (value: string) => {
+    const newUsername = value.replace(/\s+/g, '') // Remove spaces
     setUsername(newUsername)
-    setValue("username", newUsername, { shouldValidate: true })
+    form.setValue("username", newUsername, { shouldValidate: true })
   }
 
   const onSubmit = async (data: SignUpFormData) => {
+    if (usernameError) return
+
     setIsLoading(true)
     setError(null)
+    setSuccess(null)
 
     try {
       await axios.post('/api/user', {
-        fullName: data.name,
-        username: data.username,
-        email: data.email,
+        fullName: data.name.trim(),
+        username: data.username.trim(),
+        email: data.email.toLowerCase(),
         password: data.password,
       })
-      router.push("/sign-in")
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      
+      setSuccess("Account created successfully! Redirecting to sign in...")
+      setTimeout(() => {
+        router.push("/sign-in")
+      }, 2000)
+      
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || "Something went wrong. Please try again."
+      const errorMessage = err.response?.data?.message || "Failed to create account. Please try again."
       setError(errorMessage)
     } finally {
       setIsLoading(false)
     }
   }
 
+  const getStrengthVariant = (strength: number): "destructive" | "secondary" | "default" => {
+    if (strength <= 2) return "destructive"
+    if (strength <= 4) return "secondary"
+    return "default"
+  }
+
+  const getStrengthText = (strength: number) => {
+    if (strength <= 2) return "Weak"
+    if (strength <= 4) return "Medium"
+    return "Strong"
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Create account</CardTitle>
-          <CardDescription className="text-center">
-            Enter your information to create your account
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input
-                id="name"
-                type="text"
-                placeholder="Enter your full name"
-                {...register("name")}
-                className={errors.name ? "border-red-500" : ""}
-              />
-              {errors.name && (
-                <p className="text-sm text-red-500">{errors.name.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
-              <Input
-                id="username"
-                type="text"
-                placeholder="Enter your username"
-                {...register("username")}
-                value={username}
-                onChange={handleUsernameChange}
-                className={errors.username || usernameError ? "border-red-500" : ""}
-              />
-              {isCheckingUsername && <Loader2 className="absolute right-3 top-2.5 h-4 w-4 animate-spin" />}
-              {errors.username && (
-                <p className="text-sm text-red-500">{errors.username.message}</p>
-              )}
-              {usernameError && (
-                <p className="text-sm text-red-500">{usernameError}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                {...register("email")}
-                className={errors.email ? "border-red-500" : ""}
-              />
-              {errors.email && (
-                <p className="text-sm text-red-500">{errors.email.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
-                  {...register("password")}
-                  className={errors.password ? "border-red-500 pr-10" : "pr-10"}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-black p-4">
+      <div className="w-full max-w-md">
+        <Card className="border border-gray-700/50 shadow-2xl bg-gray-800/90 backdrop-blur-sm">
+          <CardHeader className="space-y-4 pb-8 text-center">
+            <div className="flex justify-center">
+              <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <UserPlus className="w-8 h-8 text-white" />
               </div>
-              {errors.password && (
-                <p className="text-sm text-red-500">{errors.password.message}</p>
-              )}
             </div>
+            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+              Create Account
+            </CardTitle>
+            <CardDescription className="text-gray-400">
+              Join Pieces to start sharing your code with the world
+            </CardDescription>
+          </CardHeader>
+          
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                {error && (
+                  <Alert variant="destructive" className="border-red-700 bg-red-900/20">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertDescription className="text-red-400">
+                      {error}
+                    </AlertDescription>
+                  </Alert>
+                )}
 
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <div className="relative">
-                <Input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  placeholder="Confirm your password"
-                  {...register("confirmPassword")}
-                  className={errors.confirmPassword ? "border-red-500 pr-10" : "pr-10"}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
+                {success && (
+                  <Alert className="border-green-700 bg-green-900/20">
+                    <Check className="h-4 w-4 text-green-400" />
+                    <AlertDescription className="text-green-400">
+                      {success}
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-300">
+                        Full Name
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
+                          <Input
+                            type="text"
+                            placeholder="Enter your full name"
+                            disabled={isLoading}
+                            className="pl-10 h-12 bg-gray-900/50 border-gray-600 text-white placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500/20"
+                            {...field}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )}
-                </button>
-              </div>
-              {errors.confirmPassword && (
-                <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>
-              )}
-            </div>
+                />
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating account...
-                </>
-              ) : (
-                "Create Account"
-              )}
-            </Button>
+                <FormField
+                  control={form.control}
+                  name="username"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-300">
+                        Username
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
+                          <Input
+                            type="text"
+                            placeholder="Choose a username"
+                            disabled={isLoading}
+                            className={`pl-10 pr-10 h-12 bg-gray-900/50 border-gray-600 text-white placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500/20 ${
+                              form.formState.errors.username || usernameError ? "border-red-500" : 
+                              username && !usernameError ? "border-green-500" : ""
+                            }`}
+                            {...field}
+                            onChange={(e) => {
+                              handleUsernameChange(e.target.value)
+                              field.onChange(e)
+                            }}
+                          />
+                          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                            {isCheckingUsername ? (
+                              <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                            ) : username && !usernameError ? (
+                              <Check className="h-4 w-4 text-green-400" />
+                            ) : usernameError ? (
+                              <X className="h-4 w-4 text-red-400" />
+                            ) : null}
+                          </div>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                      {usernameError && (
+                        <p className="text-sm text-red-400 flex items-center mt-1">
+                          <AlertTriangle className="w-4 h-4 mr-1" />
+                          {usernameError}
+                        </p>
+                      )}
+                      {username && !usernameError && !isCheckingUsername && (
+                        <p className="text-sm text-green-400 flex items-center mt-1">
+                          <Check className="w-4 h-4 mr-1" />
+                          Username is available
+                        </p>
+                      )}
+                    </FormItem>
+                  )}
+                />
 
-            <GoogleSignInButton className="text-primary-foreground transition-colors duration-200">Sign in with Google</GoogleSignInButton>
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-300">
+                        Email Address
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
+                          <Input
+                            type="email"
+                            placeholder="Enter your email"
+                            disabled={isLoading}
+                            className="pl-10 h-12 bg-gray-900/50 border-gray-600 text-white placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500/20"
+                            {...field}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-300">
+                        Password
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Create a strong password"
+                            disabled={isLoading}
+                            className="pl-10 pr-12 h-12 bg-gray-900/50 border-gray-600 text-white placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500/20"
+                            {...field}
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={() => setShowPassword(!showPassword)}
+                            disabled={isLoading}
+                            className="absolute right-2 top-1/2 transform -translate-y-1/2 hover:bg-gray-700/50"
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-4 w-4 text-gray-400" />
+                            ) : (
+                              <Eye className="h-4 w-4 text-gray-400" />
+                            )}
+                          </Button>
+                        </div>
+                      </FormControl>
+                      
+                      {/* Password strength indicator */}
+                      {watchPassword && (
+                        <div className="space-y-3 mt-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-gray-400">Password strength:</span>
+                            <Badge 
+                              variant={getStrengthVariant(passwordStrength.strength)} 
+                              className={`text-xs ${
+                                passwordStrength.strength <= 2 ? 'bg-red-900 text-red-300' :
+                                passwordStrength.strength <= 4 ? 'bg-yellow-900 text-yellow-300' : 'bg-green-900 text-green-300'
+                              }`}
+                            >
+                              {getStrengthText(passwordStrength.strength)}
+                            </Badge>
+                          </div>
+                          <Progress 
+                            value={(passwordStrength.strength / 6) * 100} 
+                            className="w-full h-2 bg-gray-700"
+                          />
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div className={`flex items-center ${passwordStrength.minLength ? 'text-green-400' : 'text-gray-500'}`}>
+                              {passwordStrength.minLength ? <Check className="w-3 h-3 mr-1" /> : <X className="w-3 h-3 mr-1" />}
+                              8+ characters
+                            </div>
+                            <div className={`flex items-center ${passwordStrength.hasUppercase ? 'text-green-400' : 'text-gray-500'}`}>
+                              {passwordStrength.hasUppercase ? <Check className="w-3 h-3 mr-1" /> : <X className="w-3 h-3 mr-1" />}
+                              Uppercase
+                            </div>
+                            <div className={`flex items-center ${passwordStrength.hasLowercase ? 'text-green-400' : 'text-gray-500'}`}>
+                              {passwordStrength.hasLowercase ? <Check className="w-3 h-3 mr-1" /> : <X className="w-3 h-3 mr-1" />}
+                              Lowercase
+                            </div>
+                            <div className={`flex items-center ${passwordStrength.hasNumber ? 'text-green-400' : 'text-gray-500'}`}>
+                              {passwordStrength.hasNumber ? <Check className="w-3 h-3 mr-1" /> : <X className="w-3 h-3 mr-1" />}
+                              Number
+                            </div>
+                            <div className={`flex items-center ${passwordStrength.hasSpecialChar ? 'text-green-400' : 'text-gray-500'}`}>
+                              {passwordStrength.hasSpecialChar ? <Check className="w-3 h-3 mr-1" /> : <X className="w-3 h-3 mr-1" />}
+                              Special char
+                            </div>
+                            <div className={`flex items-center ${passwordStrength.noSpaces ? 'text-green-400' : 'text-gray-500'}`}>
+                              {passwordStrength.noSpaces ? <Check className="w-3 h-3 mr-1" /> : <X className="w-3 h-3 mr-1" />}
+                              No spaces
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <div className="text-center text-sm">
-              <span className="text-muted-foreground">Already have an account? </span>
-              <Link href="/sign-in" className="text-primary hover:underline font-medium">
-                Sign in
-              </Link>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-300">
+                        Confirm Password
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
+                          <Input
+                            type={showConfirmPassword ? "text" : "password"}
+                            placeholder="Confirm your password"
+                            disabled={isLoading}
+                            className="pl-10 pr-12 h-12 bg-gray-900/50 border-gray-600 text-white placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500/20"
+                            {...field}
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            disabled={isLoading}
+                            className="absolute right-2 top-1/2 transform -translate-y-1/2 hover:bg-gray-700/50"
+                          >
+                            {showConfirmPassword ? (
+                              <EyeOff className="h-4 w-4 text-gray-400" />
+                            ) : (
+                              <Eye className="h-4 w-4 text-gray-400" />
+                            )}
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <Button 
+                  type="submit" 
+                  variant="default"
+                  size="lg"
+                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200"
+                  disabled={isLoading || !!usernameError || isCheckingUsername || !passwordStrength.isValid}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating Account...
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="mr-2 h-4 w-4" />
+                      Create Account
+                    </>
+                  )}
+                </Button>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-gray-600" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-gray-800 px-2 text-gray-500">Already have an account?</span>
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  className="w-full border-gray-600 bg-gray-900/50 text-gray-300 hover:bg-gray-700/50 hover:text-white"
+                  asChild
+                >
+                  <Link href="/sign-in">
+                    Sign In Instead
+                  </Link>
+                </Button>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+        
+        <div className="mt-8 text-center">
+          <p className="text-xs text-gray-500">
+            By creating an account, you agree to our{' '}
+            <Link href="/terms-of-service" className="text-blue-400 hover:underline font-medium">
+              Terms of Service
+            </Link>{' '}
+            and{' '}
+            <Link href="/privacy-policy" className="text-blue-400 hover:underline font-medium">
+              Privacy Policy
+            </Link>
+          </p>
+        </div>
+      </div>
     </div>
   )
 }
