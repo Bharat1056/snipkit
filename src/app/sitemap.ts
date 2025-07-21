@@ -12,18 +12,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     select: {
       slug: true,
       updatedAt: true,
-      user: {
+      author: {
         select: {
           username: true,
-        },
+        }
       },
     },
   });
 
   const codeEntries: MetadataRoute.Sitemap = codes
-    .filter(code => code.user) // Ensure user relationship exists
+    .filter(code => code.author) // Ensure user relationship exists
     .map(code => ({
-      url: `${siteUrl}/code/${code.user!.username}/${code.slug}`,
+      url: `${siteUrl}/code/${code.author!.username}/${code.slug}`,
       lastModified: code.updatedAt,
       changeFrequency: 'daily',
       priority: 0.8,

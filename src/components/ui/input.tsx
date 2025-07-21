@@ -16,7 +16,7 @@ function Input({ className, type, webkitdirectory, ...props }: InputProps) {
         "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
         className
       )}
-      webkitdirectory={webkitdirectory}
+      {...(webkitdirectory ? { webkitdirectory: "" } : {}) as any}
       {...props}
     />
   )

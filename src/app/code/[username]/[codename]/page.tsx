@@ -40,7 +40,7 @@ export default async function ProjectDetailPage({
     <ProjectDetail
       username={username}
       title={code.title}
-      description={code.description}
+      description={code.description ?? ""}
       downloadPath={code.downloadPath === "" ? "/" : code.downloadPath as string}
       access={code.access}
       files={code.files.map((f) => ({

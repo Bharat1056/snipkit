@@ -48,7 +48,6 @@ export async function GET(req: Request) {
         name: file.name,
         key: file.key,
         size: file.size,
-        signedUrl: file.signedUrl,
         createdAt: file.createdAt,
       })),
     };

@@ -25,7 +25,7 @@ interface File {
 interface ProjectDetailProps {
   username: string;
   title: string;
-  description?: string;
+  description: string;
   downloadPath: string;
   access: string;
   files: File[];
