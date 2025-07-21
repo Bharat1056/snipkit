@@ -1,7 +1,7 @@
 "use client"
 
 import { Badge } from "@/components/ui/badge"
-import { Terminal, Brain, ArrowRight } from "lucide-react"
+import { Terminal, ArrowRight } from "lucide-react"
 import { whyFree } from "./constants"
 
 const WhyFreeFeatures = () => {

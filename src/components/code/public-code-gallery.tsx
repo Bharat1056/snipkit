@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { FileCode, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { FileCode } from "lucide-react";
 import { CodeFileCard } from "./code-card"; // ✅ your shared component
 
 interface CodeFile {
@@ -31,7 +30,6 @@ export function PublicCodeGallery() {
   const [codeFiles, setCodeFiles] = useState<CodeFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
 
@@ -49,6 +47,7 @@ export function PublicCodeGallery() {
         setCodeFiles(data.data ?? []);
         setTotal(data.total ?? 0);
       } catch (e) {
+        console.error("Error fetching public code snippets:", e);
         setError("Failed to load public code snippets");
       } finally {
         setLoading(false);

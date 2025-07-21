@@ -28,7 +28,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
-  Calendar,
   Eye,
   FileCode,
   FileText,
@@ -222,7 +221,7 @@ export function CodeFileCard({
                   <AlertDialogHeader>
                     <AlertDialogTitle className="text-white">Are you absolutely sure?</AlertDialogTitle>
                     <AlertDialogDescription className="text-gray-400">
-                      This action cannot be undone. This will permanently delete "{file.title}" and all its files.
+                      This action cannot be undone. This will permanently delete &quot;{file.title}&quot; and all its files.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>

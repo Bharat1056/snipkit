@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Code, CheckCircle, User, Mail, ExternalLink } from "lucide-react";
+import Link from "next/link";
 
 interface CliLoginPageProps {
   searchParams: Promise<{ redirect_uri?: string }>;
@@ -114,10 +115,10 @@ export default async function CliLoginPage({ searchParams }: CliLoginPageProps) 
                 size="lg" 
                 className="w-full"
               >
-                <a href="/code">
+                <Link href="/code">
                   <ExternalLink className="mr-2 h-4 w-4" />
                   View Code Snippets
-                </a>
+                </Link>
               </Button>
             </div>
             

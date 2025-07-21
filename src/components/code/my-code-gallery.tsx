@@ -1,15 +1,20 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, FileCode, Search, Calendar, User, Eye, Download } from "lucide-react";
+import { Loader2, FileCode, Search } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { CodeFileCard } from "./code-card";
-import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
 
 interface CodeFile {
   id: string;
@@ -31,7 +36,7 @@ interface CodeFile {
   }[];
 }
 
-export const MyCodeGallery = forwardRef(function CodeGallery(props, ref) {
+export const MyCodeGallery = forwardRef(function CodeGallery(_, ref) {
   const { data: session } = useSession();
   const [codeFiles, setCodeFiles] = useState<CodeFile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,46 +52,57 @@ export const MyCodeGallery = forwardRef(function CodeGallery(props, ref) {
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const PAGE_SIZE = 9;
 
-  const fetchCodeFiles = useCallback(async (reset = false) => {
-    if (!session?.user) return;
-    if (!reset && loadingMore) return;
-    if (!reset && !hasMore) return;
-    if (reset) {
-      setPage(1);
-      setHasMore(true);
-    }
-    reset ? setLoading(true) : setLoadingMore(true);
-    try {
-      let url = `/api/code/list?type=my&page=${reset ? 1 : page}&pageSize=${PAGE_SIZE}`;
-      if (search) url += `&slug=${encodeURIComponent(search)}`;
-      const response = await fetch(url);
-      if (!response.ok) throw new Error("Failed to fetch code files");
-      const data = await response.json();
-      reset
-        ? setCodeFiles(data.data ?? [])
-        : setCodeFiles((prev) => [...prev, ...(data.data ?? [])]);
-      setHasMore((data.data?.length ?? 0) === PAGE_SIZE);
-      reset ? setPage(2) : setPage((prev) => prev + 1);
-    } catch (error) {
-      console.error("Error fetching code files:", error);
-      setError("Failed to load code files");
-    } finally {
-      reset ? setLoading(false) : setLoadingMore(false);
-    }
-  }, [session, search, page, loadingMore, hasMore]);
+  const fetchCodeFiles = useCallback(
+    async (reset = false) => {
+      if (!session?.user) return;
+      if (!reset && (loadingMore || !hasMore)) return;
+
+      reset ? setPage(1) : setPage((prev) => prev);
+      reset ? setLoading(true) : setLoadingMore(true);
+
+      try {
+        let url = `/api/code/list?type=my&page=${reset ? 1 : page}&pageSize=${PAGE_SIZE}`;
+        if (search) url += `&slug=${encodeURIComponent(search)}`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Failed to fetch code files");
+
+        const data = await response.json();
+        const newFiles = data.data ?? [];
+
+        if (reset) {
+          setCodeFiles(newFiles);
+          setPage(2);
+        } else {
+          setCodeFiles((prev) => [...prev, ...newFiles]);
+          setPage((prev) => prev + 1);
+        }
+
+        setHasMore(newFiles.length === PAGE_SIZE);
+      } catch (error) {
+        console.error("Error fetching code files:", error);
+        setError("Failed to load code files");
+      } finally {
+        reset ? setLoading(false) : setLoadingMore(false);
+      }
+    },
+    [session?.user, search, page, loadingMore, hasMore]
+  );
 
   useEffect(() => {
     if (session?.user) fetchCodeFiles(true);
-  }, [session, search]);
+  }, [session?.user, search]);
 
   useEffect(() => {
     if (loading || loadingMore || !hasMore || !loadMoreRef.current) return;
-    if (observer.current) observer.current.disconnect();
-    observer.current = new IntersectionObserver((entries) => {
+
+    const observerInstance = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting) fetchCodeFiles();
     });
-    observer.current.observe(loadMoreRef.current);
-    return () => observer.current?.disconnect();
+
+    observer.current = observerInstance;
+    observerInstance.observe(loadMoreRef.current);
+
+    return () => observerInstance.disconnect();
   }, [loading, loadingMore, hasMore, fetchCodeFiles]);
 
   useImperativeHandle(ref, () => ({ refetch: () => fetchCodeFiles(true) }), [fetchCodeFiles]);
@@ -96,9 +112,7 @@ export const MyCodeGallery = forwardRef(function CodeGallery(props, ref) {
     const newAccess = originalAccess === "public" ? "private" : "public";
 
     setCodeFiles((prevFiles) =>
-      prevFiles.map((f) =>
-        f.id === file.id ? { ...f, access: newAccess } : f
-      )
+      prevFiles.map((f) => (f.id === file.id ? { ...f, access: newAccess } : f))
     );
 
     try {
@@ -108,16 +122,13 @@ export const MyCodeGallery = forwardRef(function CodeGallery(props, ref) {
         body: JSON.stringify({ codeId: file.id, access: newAccess }),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to update access level");
-      }
+      if (!response.ok) throw new Error("Failed to update access level");
 
       toast.success(`Snippet is now ${newAccess}`);
     } catch (error) {
+      console.error("Error updating access level:", error);
       setCodeFiles((prevFiles) =>
-        prevFiles.map((f) =>
-          f.id === file.id ? { ...f, access: originalAccess } : f
-        )
+        prevFiles.map((f) => (f.id === file.id ? { ...f, access: originalAccess } : f))
       );
       toast.error("Failed to update access. Please try again.");
     }
@@ -135,6 +146,7 @@ export const MyCodeGallery = forwardRef(function CodeGallery(props, ref) {
       setCodeFiles((prev) => prev.filter((f) => f.id !== file.id));
       toast.success("Code deleted");
     } catch (e) {
+      console.error("Error deleting code:", e);
       toast.error("Failed to delete code");
     } finally {
       setDeletingId(null);

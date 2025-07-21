@@ -5,7 +5,7 @@ import {
   ListObjectsV2Command
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { AWS_CONFIG, UPLOAD_CONFIG, PATH_CONFIG } from "../constants";
+import { AWS_CONFIG, PATH_CONFIG } from "../constants";
 import s3Client from "../client";
 import {
   FileUploadRequest,

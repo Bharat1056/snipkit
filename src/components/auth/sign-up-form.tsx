@@ -78,7 +78,7 @@ export function SignUpForm() {
         setIsCheckingUsername(false)
       }
     }, 500),
-    []
+    [setUsernameError, setIsCheckingUsername]
   )
 
   useEffect(() => {
@@ -111,7 +111,7 @@ export function SignUpForm() {
         router.push("/sign-in")
       }, 2000)
       
-    } catch (err: any) {
+    } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       const errorMessage = err.response?.data?.message || "Failed to create account. Please try again."
       setError(errorMessage)
     } finally {

@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Star, Users, Code, Zap, ArrowRight, Terminal } from "lucide-react"
+import { Star, Zap, ArrowRight, Terminal } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { hero } from "./constants"
 import { TerminalCommand } from "@/components/ui/terminal-command"
