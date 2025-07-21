@@ -27,21 +27,23 @@ export function Navbar() {
           <div className="flex-grow flex justify-center">
             <div className="hidden md:flex items-center space-x-1">
               <Button
-                variant={pathname === '/' ? "secondary" : "ghost"}
+                variant={pathname === '/dashboard' ? "secondary" : "ghost"}
                 size="sm"
                 asChild
-                className={pathname === '/' ? "bg-gray-700/50 text-white" : "text-gray-300 hover:text-white hover:bg-gray-700/50"}
+                className={pathname === '/dashboard' ? "bg-gray-700/50 text-white" : "text-gray-300 hover:text-white hover:bg-gray-700/50"}
               >
-                <Link href="/">Home</Link>
+                <Link href="/dashboard">Dashboard</Link>
               </Button>
-              <Button
-                variant={pathname === '/code' ? "secondary" : "ghost"}
-                size="sm"
-                asChild
-                className={pathname === '/code' ? "bg-gray-700/50 text-white" : "text-gray-300 hover:text-white hover:bg-gray-700/50"}
-              >
-                <Link href="/code">Code</Link>
-              </Button>
+              {session && (
+                <Button
+                  variant={pathname === '/me' ? "secondary" : "ghost"}
+                  size="sm"
+                  asChild
+                  className={pathname === '/me' ? "bg-gray-700/50 text-white" : "text-gray-300 hover:text-white hover:bg-gray-700/50"}
+                >
+                    <Link href="/me">Me</Link>
+                  </Button>
+              )}
             </div>
           </div>
 

@@ -31,21 +31,28 @@ export default withAuth(
       return NextResponse.next()
     }
 
+    // For /code/[username]/[codename]/[filename] public routes, allow access without authentication
+    const codeViewPattern = /^\/code\/[^/]+\/[^/]+/
+    if (codeViewPattern.test(pathname) && !pathname.includes("/edit") && !pathname.includes("/settings")) {
+      return NextResponse.next()
+    }
+
+    // Allow public access to /code (landing page)
+    if (pathname === "/code") {
+      return NextResponse.next()
+    }
+
     // Protected routes that require authentication
-    const protectedRoutes = ["/dashboard", "/code", "/cli-login"]
-    const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
+    const protectedRoutes = ["/me", "/cli-login"]
+    const isProtectedRoute = protectedRoutes.some(route => 
+      pathname === route || pathname.startsWith(route + "/")
+    )
 
     if (isProtectedRoute && !token) {
       // User is not authenticated, redirect to sign-in with callback URL
       const signInUrl = new URL("/sign-in", req.url)
       signInUrl.searchParams.set("callbackUrl", req.url)
       return NextResponse.redirect(signInUrl)
-    }
-
-    // For /code/[username]/[codename] public routes, allow access without authentication
-    const codeViewPattern = /^\/code\/[^/]+\/[^/]+/
-    if (codeViewPattern.test(pathname) && !pathname.includes("/edit") && !pathname.includes("/settings")) {
-      return NextResponse.next()
     }
 
     return NextResponse.next()
@@ -79,6 +86,21 @@ export default withAuth(
         const codeViewPattern = /^\/code\/[^/]+\/[^/]+/
         if (codeViewPattern.test(pathname) && !pathname.includes("/edit") && !pathname.includes("/settings")) {
           return true
+        }
+
+        // Allow public access to /code landing page
+        if (pathname === "/code") {
+          return true
+        }
+
+        // For protected routes, require authentication
+        const protectedRoutes = ["/me", "/cli-login", "/dashboard"]
+        const isProtectedRoute = protectedRoutes.some(route => 
+          pathname === route || pathname.startsWith(route + "/")
+        )
+        
+        if (isProtectedRoute) {
+          return !!token
         }
 
         // For all other routes, require authentication

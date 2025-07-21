@@ -100,7 +100,7 @@ export const MyCodeGallery = forwardRef(function CodeGallery(_, ref) {
     if (session?.user) {
       fetchCodeFiles(true);
     }
-  }, [session?.user, search, fetchCodeFiles]);
+  }, [session?.user, search]);
 
   useEffect(() => {
     if (loading || loadingMore || !hasMore || !loadMoreRef.current) return;
