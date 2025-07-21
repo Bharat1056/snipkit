@@ -54,8 +54,6 @@ Follow these instructions to get a copy of the project up and running on your lo
 
     ```env
     DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE"
-    NEXTAUTH_SECRET="your-super-secret-key"
-    NEXTAUTH_URL="http://localhost:3000"
 
     # AWS S3 Credentials
     S3_ACCESS_KEY_ID="your-s3-access-key"

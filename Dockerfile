@@ -29,16 +29,6 @@ COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/src ./src
 COPY --from=builder /app/middleware.ts ./middleware.ts
 
-# Set environment variables (documented as ARG for build-time, but should be set at runtime)
-# These are required for the app to run
-ARG DATABASE_URL
-ARG NEXTAUTH_SECRET
-ARG NEXTAUTH_URL
-ARG AWS_S3_ACCESS_KEY_ID
-ARG AWS_S3_SECRET_ACCESS_KEY
-ARG AWS_S3_REGION
-ARG BUCKET_NAME
-
 # Expose port 3000
 EXPOSE 3000
 
