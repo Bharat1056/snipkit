@@ -44,7 +44,6 @@ import {
 } from '@/lib/validations/auth';
 import axios from 'axios';
 import debounce from 'lodash.debounce';
-import type { AxiosError } from 'axios';
 
 export function SignUpForm() {
   const [isLoading, setIsLoading] = useState(false);
