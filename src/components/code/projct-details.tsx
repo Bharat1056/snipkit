@@ -1,7 +1,15 @@
-"use client";
+'use client';
 
-import { Eye, Download, FileText, FileCode, User, Lock, Unlock, FolderOpen } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import {
+  Eye,
+  FileText,
+  FileCode,
+  User,
+  Lock,
+  Unlock,
+  FolderOpen,
+} from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import {
   Card,
   CardHeader,
@@ -9,10 +17,10 @@ import {
   CardDescription,
   CardContent,
   CardFooter,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { toast } from "sonner";
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { toast } from 'sonner';
 
 interface File {
   id: string;
@@ -39,7 +47,7 @@ export function ProjectDetail({
   access,
   files,
 }: ProjectDetailProps) {
-  const isPublic = access === "public";
+  const isPublic = access === 'public';
 
   return (
     <div className="max-w-6xl mx-auto py-10 px-4">
@@ -57,12 +65,12 @@ export function ProjectDetail({
                 </CardDescription>
               )}
             </div>
-            <Badge 
+            <Badge
               variant="outline"
               className={`${
-                isPublic 
-                  ? "border-green-500/50 bg-green-500/10 text-green-400" 
-                  : "border-orange-500/50 bg-orange-500/10 text-orange-400"
+                isPublic
+                  ? 'border-green-500/50 bg-green-500/10 text-green-400'
+                  : 'border-orange-500/50 bg-orange-500/10 text-orange-400'
               } backdrop-blur-sm text-sm px-3 py-1`}
             >
               {isPublic ? (
@@ -74,7 +82,7 @@ export function ProjectDetail({
             </Badge>
           </div>
         </CardHeader>
-        
+
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-900/50 border border-gray-600/30">
@@ -84,13 +92,13 @@ export function ProjectDetail({
                 <span className="text-white font-medium">{username}</span>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-900/50 border border-gray-600/30">
               <FolderOpen className="h-5 w-5 text-purple-400 flex-shrink-0" />
               <div className="min-w-0 flex-1">
                 <span className="text-gray-400 block">Download Path</span>
                 <code className="text-white font-mono text-xs break-all bg-gray-800 px-2 py-1 rounded">
-                  {downloadPath === "" ? "/" : downloadPath}
+                  {downloadPath === '' ? '/' : downloadPath}
                 </code>
               </div>
             </div>
@@ -103,9 +111,11 @@ export function ProjectDetail({
         <Card className="border-gray-600/30 bg-gray-800/60 backdrop-blur-md">
           <CardContent className="py-16 text-center">
             <FileText className="h-16 w-16 mx-auto text-gray-500 mb-4" />
-            <h3 className="text-xl font-semibold text-white mb-2">No Files Found</h3>
+            <h3 className="text-xl font-semibold text-white mb-2">
+              No Files Found
+            </h3>
             <p className="text-gray-400">
-              This project doesn't contain any files yet.
+              This project doesn&apos;t contain any files yet.
             </p>
           </CardContent>
         </Card>
@@ -117,11 +127,11 @@ export function ProjectDetail({
               Project Files ({files.length})
             </h2>
           </div>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {files.map((file) => (
-              <Card 
-                key={file.id} 
+            {files.map(file => (
+              <Card
+                key={file.id}
                 className="group h-full transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl border-gray-600/30 bg-gray-800/60 backdrop-blur-md"
               >
                 <CardHeader className="pb-3">
@@ -130,22 +140,25 @@ export function ProjectDetail({
                       <FileText className="h-4 w-4 text-white" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <CardTitle className="text-base font-semibold text-white leading-tight truncate" title={file.name}>
+                      <CardTitle
+                        className="text-base font-semibold text-white leading-tight truncate"
+                        title={file.name}
+                      >
                         {file.name}
                       </CardTitle>
-                      <p className="text-xs text-gray-400 mt-1">
-                        {file.size}
-                      </p>
+                      <p className="text-xs text-gray-400 mt-1">{file.size}</p>
                     </div>
                   </div>
                 </CardHeader>
-                
+
                 <CardContent className="pb-3">
                   <div className="space-y-2">
                     <div className="p-2 rounded-lg bg-gray-900/50 border border-gray-600/30">
-                      <span className="text-xs text-gray-400 block mb-1">Path:</span>
+                      <span className="text-xs text-gray-400 block mb-1">
+                        Path:
+                      </span>
                       <code className="text-xs text-white font-mono break-all">
-                        {`${downloadPath}${file.path === "." ? `${title}` : `${file.path}`}`}
+                        {`${downloadPath}${file.path === '.' ? `${title}` : `${file.path}`}`}
                       </code>
                     </div>
                   </div>
@@ -159,7 +172,7 @@ export function ProjectDetail({
                       onClick={() => {
                         const command = `npx snipkit @${username}/${title}/${file.name}`;
                         navigator.clipboard.writeText(command);
-                        toast.success("CLI command copied!", {
+                        toast.success('CLI command copied!', {
                           description: `Copied: ${command}`,
                         });
                       }}
@@ -168,10 +181,10 @@ export function ProjectDetail({
                       <FileCode className="w-4 h-4 mr-2" />
                       CLI
                     </Button>
-                    
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
+
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       asChild
                       className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 flex-1"
                     >
