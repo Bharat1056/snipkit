@@ -84,9 +84,7 @@ function isIgnored(
  * Read and parse .snipkitignore file if present in the file list
  */
 async function readCustomIgnorePatterns(files: File[]): Promise<string[]> {
-  const ignoreFile = files.find(
-    file => file.name === CUSTOM_IGNORE_FILENAME
-  );
+  const ignoreFile = files.find(file => file.name === CUSTOM_IGNORE_FILENAME);
 
   if (!ignoreFile) {
     return [];
@@ -106,7 +104,6 @@ async function readCustomIgnorePatterns(files: File[]): Promise<string[]> {
  */
 export async function filterIgnoredFiles(files: File[]): Promise<FilterResult> {
   const customIgnorePatterns = await readCustomIgnorePatterns(files);
-  const allPatterns = [...DEFAULT_IGNORE_PATTERNS, ...customIgnorePatterns];
 
   const validFiles: File[] = [];
   const ignoredFiles: Array<{
@@ -131,9 +128,10 @@ export async function filterIgnoredFiles(files: File[]): Promise<FilterResult> {
 
     // Check against all patterns
     const defaultPatternMatch = isIgnored(filePath, DEFAULT_IGNORE_PATTERNS);
-    const customPatternMatch = customIgnorePatterns.length > 0 
-      ? isIgnored(filePath, customIgnorePatterns) 
-      : { ignored: false };
+    const customPatternMatch =
+      customIgnorePatterns.length > 0
+        ? isIgnored(filePath, customIgnorePatterns)
+        : { ignored: false };
 
     if (defaultPatternMatch.ignored) {
       ignoredFiles.push({
@@ -162,20 +160,26 @@ export async function filterIgnoredFiles(files: File[]): Promise<FilterResult> {
 /**
  * Get a human-readable summary of ignored files
  */
-export function getIgnoreSummary(ignoredFiles: FilterResult['ignoredFiles']): string {
+export function getIgnoreSummary(
+  ignoredFiles: FilterResult['ignoredFiles']
+): string {
   if (ignoredFiles.length === 0) return '';
 
-  const groups = ignoredFiles.reduce((acc, item) => {
-    const key = item.reason;
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(item.file.name);
-    return acc;
-  }, {} as Record<string, string[]>);
+  const groups = ignoredFiles.reduce(
+    (acc, item) => {
+      const key = item.reason;
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(item.file.name);
+      return acc;
+    },
+    {} as Record<string, string[]>
+  );
 
   const summaries = Object.entries(groups).map(([reason, files]) => {
-    const fileList = files.length <= 3 
-      ? files.join(', ') 
-      : `${files.slice(0, 3).join(', ')} and ${files.length - 3} more`;
+    const fileList =
+      files.length <= 3
+        ? files.join(', ')
+        : `${files.slice(0, 3).join(', ')} and ${files.length - 3} more`;
     return `${fileList} (${reason.toLowerCase()})`;
   });
 
@@ -185,4 +189,4 @@ export function getIgnoreSummary(ignoredFiles: FilterResult['ignoredFiles']): st
 /**
  * Export constants for external use
  */
-export { DEFAULT_IGNORE_PATTERNS, CUSTOM_IGNORE_FILENAME }; 
+export { DEFAULT_IGNORE_PATTERNS, CUSTOM_IGNORE_FILENAME };
