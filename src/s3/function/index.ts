@@ -2,11 +2,11 @@ import {
   GetObjectCommand,
   PutObjectCommand,
   DeleteObjectCommand,
-  ListObjectsV2Command
-} from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { AWS_CONFIG, PATH_CONFIG } from "../constants";
-import s3Client from "../client";
+  ListObjectsV2Command,
+} from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { AWS_CONFIG, PATH_CONFIG, timeTakenForSignedUrl } from '../constants';
+import s3Client from '../client';
 import {
   FileUploadRequest,
   FileDeletionRequest,
@@ -20,15 +20,19 @@ import {
   FileDeletionSchema,
   FileListSchema,
   GetSignedDownloadUrlRequest,
-} from "../types";
+} from '../types';
 
-const generateFileKey = (username: string, slug: string, filename: string): string => {
+const generateFileKey = (
+  username: string,
+  slug: string,
+  filename: string
+): string => {
   const timestamp = Date.now();
   const sanitizedFilename = filename
-                            .replace(/[^a-zA-Z0-9.-]/g, "_")  
-                            .replace(/_{2,}/g, "_")           
-                            .replace(/^(_+)|(_+)$/g, "")      
-                            .substring(0, 255);       
+    .replace(/[^a-zA-Z0-9.-]/g, '_')
+    .replace(/_{2,}/g, '_')
+    .replace(/^(_+)|(_+)$/g, '')
+    .substring(0, 255);
   return `${PATH_CONFIG.userUploads}/${username}/${slug}-${timestamp}-${sanitizedFilename}`;
 };
 
@@ -38,40 +42,39 @@ export const uploadFile = async (
   try {
     // Validate input
     const validatedRequest = FileUploadSchema.parse(request);
-    
     // Generate unique key
     const key = generateFileKey(
       validatedRequest.username,
       validatedRequest.slug,
       validatedRequest.filename
     );
-    
+
     // Create presigned URL for that file
     const command = new PutObjectCommand({
       Bucket: AWS_CONFIG.bucketName,
       Key: key,
       ContentType: validatedRequest.contentType,
-      CacheControl: "no-cache",
+      CacheControl: 'no-cache',
       ContentDisposition: `attachment; filename="${validatedRequest.filename}"`,
     });
 
     // for production
     const uploadUrl = await getSignedUrl(s3Client, command, {
-      expiresIn: 60 * 5,
+      expiresIn: timeTakenForSignedUrl,
     });
 
     return {
       success: true,
       uploadUrl,
-      key
+      key,
     };
   } catch (error) {
     if (error instanceof S3ServiceError) {
       throw error;
     }
     throw new S3ServiceError(
-      `Failed to generate upload URL: ${error instanceof Error ? error.message : "Unknown error"}`,
-      "UPLOAD_URL_GENERATION_FAILED",
+      `Failed to generate upload URL: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      'UPLOAD_URL_GENERATION_FAILED',
       error
     );
   }
@@ -83,22 +86,22 @@ export const deleteFile = async (
   try {
     // Validate input
     const validatedRequest = FileDeletionSchema.parse(request);
-    
+
     const command = new DeleteObjectCommand({
       Bucket: AWS_CONFIG.bucketName,
       Key: validatedRequest.key,
     });
-    
+
     await s3Client.send(command);
-    
+
     return {
       success: true,
       message: `File '${validatedRequest.key}' deleted successfully`,
     };
   } catch (error) {
     throw new S3ServiceError(
-      `Failed to delete file: ${error instanceof Error ? error.message : "Unknown error"}`,
-      "FILE_DELETION_FAILED",
+      `Failed to delete file: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      'FILE_DELETION_FAILED',
       error
     );
   }
@@ -110,24 +113,24 @@ export const listFiles = async (
   try {
     // Validate input
     const validatedRequest = FileListSchema.parse(request);
-    
+
     const command = new ListObjectsV2Command({
       Bucket: AWS_CONFIG.bucketName,
       Prefix: validatedRequest.prefix,
       MaxKeys: validatedRequest.maxKeys,
       ContinuationToken: validatedRequest.continuationToken,
     });
-    
+
     const response = await s3Client.send(command);
-    
-    const files: S3File[] = (response.Contents || []).map((object) => ({
+
+    const files: S3File[] = (response.Contents || []).map(object => ({
       key: object.Key!,
       size: object.Size ?? 0,
       lastModified: object.LastModified!,
-      etag: object.ETag?.replace(/"/g, "") ?? "",
+      etag: object.ETag?.replace(/"/g, '') ?? '',
       contentType: undefined, // ContentType is not available in ListObjectsV2 response
     }));
-    
+
     return {
       success: true,
       files,
@@ -136,8 +139,8 @@ export const listFiles = async (
     };
   } catch (error) {
     throw new S3ServiceError(
-      `Failed to list files: ${error instanceof Error ? error.message : "Unknown error"}`,
-      "FILE_LISTING_FAILED",
+      `Failed to list files: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      'FILE_LISTING_FAILED',
       error
     );
   }
@@ -146,10 +149,10 @@ export const listFiles = async (
 export const getSignedDownloadUrl = async (
   request: GetSignedDownloadUrlRequest
 ): Promise<string> => {
-  const { key, expiresIn, disposition = "inline", filename } = request;
+  const { key, expiresIn, disposition = 'inline', filename } = request;
 
   let contentDisposition: string = disposition;
-  if (disposition === "attachment" && filename) {
+  if (disposition === 'attachment' && filename) {
     contentDisposition = `attachment; filename="${filename}"`;
   }
 
