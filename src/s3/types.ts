@@ -5,7 +5,7 @@ export const FileUploadSchema = z.object({
   filename: z.string().min(1, "Filename is required"),
   slug: z.string().min(1, "Slug is required"),
   contentType: z.string().min(1, "Content type is required"),
-  fileSize: z.number().positive("File size must be positive"),
+  fileSize: z.number().min(0, "File size must be greater than equal to 0"),
   metadata: z.record(z.string()).optional(),
 });
 

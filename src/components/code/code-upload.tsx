@@ -164,41 +164,55 @@ export function CodeUpload({ onUploadComplete }: CodeUploadProps) {
               </Button>
             </div>
             
-            <div className="rounded-lg border border-gray-600/30 bg-gray-900/50 backdrop-blur-sm p-3 max-h-60 overflow-y-auto">
-              <div className="space-y-2">
-                {selectedFiles.map((file, index) => {
-                  const pathKey = (file as any).webkitRelativePath || file.name; // eslint-disable-line @typescript-eslint/no-explicit-any
-                  const percent = uploadProgressMap[pathKey] || 0;
-                  return (
-                    <div key={index} className="flex items-center gap-3 p-2 rounded bg-gray-800/50">
-                      <FileCode className="h-4 w-4 text-green-400 flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm text-white truncate" title={pathKey}>
-                          {pathKey}
-                        </div>
-                        <div className="text-xs text-gray-400">
-                          {(file.size / 1024).toFixed(2)} KB
-                        </div>
-                      </div>
-                      {isUploading ? (
-                        <CircularProgress value={percent} />
-                      ) : (
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={() => removeFile(file)} 
-                          disabled={isUploading} 
-                          className="h-8 w-8 text-gray-400 hover:text-red-400 hover:bg-red-500/10"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+            <div className="rounded-lg border border-gray-600/30 bg-gray-900/50 backdrop-blur-sm p-3 max-h-60 overflow-y-auto overflow-x-hidden">
+  <ul className="space-y-2">
+    {selectedFiles.map((file, index) => {
+      const pathKey = (file as any).webkitRelativePath || file.name; // eslint-disable-line @typescript-eslint/no-explicit-any
+      const percent = uploadProgressMap[pathKey] || 0;
+
+      return (
+        <li
+          key={index}
+          className="grid grid-cols-[auto_1fr_auto] items-center gap-3 p-2 rounded bg-gray-800/50 w-full"
+        >
+          <FileCode className="h-4 w-4 text-green-400 flex-shrink-0" />
+
+          {/* Filename + size */}
+          <div className="min-w-0">
+            <p
+              className="text-sm text-white truncate"
+              title={pathKey}
+            >
+              {pathKey}
+            </p>
+            <p className="text-xs text-gray-400 truncate">
+              {(file.size / 1024).toFixed(2)} KB
+            </p>
+          </div>
+
+          {/* Remove / progress */}
+          <div className="flex-shrink-0">
+            {isUploading ? (
+              <CircularProgress value={percent} />
+            ) : (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => removeFile(file)}
+                disabled={isUploading}
+                className="h-8 w-8 text-gray-400 hover:text-red-400 hover:bg-red-500/10"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </li>
+      );
+    })}
+  </ul>
+</div>
+
           </div>
         )}
 
