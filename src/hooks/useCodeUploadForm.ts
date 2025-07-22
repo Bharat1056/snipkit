@@ -151,8 +151,11 @@ export function useCodeUploadForm({
 
       if (onUploadComplete) onUploadComplete();
     } catch (err) {
-      console.error('Upload error:', err);
-      setError(err?.response?.data?.error || err.message || 'Upload failed');
+      let errorMessage = 'Failed to upload files. Please try again.';
+      if (axios.isAxiosError(err)) {
+        errorMessage = err.response?.data?.message || errorMessage;
+      }
+      setError(errorMessage);
     } finally {
       setIsUploading(false);
     }
