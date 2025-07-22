@@ -150,8 +150,7 @@ export function useCodeUploadForm({
       setSelectedFiles([]);
 
       if (onUploadComplete) onUploadComplete();
-    } catch (err: any) {
-      // eslint-disable-line @typescript-eslint/no-explicit-any
+    } catch (err) {
       console.error('Upload error:', err);
       setError(err?.response?.data?.error || err.message || 'Upload failed');
     } finally {
