@@ -4,6 +4,14 @@ import { s3Service } from "@/s3/service";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
+interface FileWithUploadData {
+  uploadUrl: string;
+  key: string;
+  path: string;
+  name: string;
+  size: number;
+}
+
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -41,51 +49,50 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "File already exists with this slug name" }, { status: 409 });
     }
 
-    // Start transaction
-    const result = await db.$transaction(async (tx) => {
-      const code = await tx.code.create({
-        data: {
-          title,
-          description,
-          slug,
-          access,
-          downloadPath,
-          authorId: userId,
-        },
-      });
-
-      const filesWithUrls = [];
-      for (const file of files) {
-        const { name, path, contentType, size } = file;
-        const uploadResponse = await s3Service.uploadFile({
-          username: user.username,
-          filename: name,
-          slug: slug,
-          contentType: contentType,
-          fileSize: size,
-          path,
-        });
-
-        await tx.file.create({
-          data: {
-            name,
-            size,
-            codeId: code.id,
+        // Step 1: Generate S3 upload URLs outside the transaction
+        const filesWithUrls: FileWithUploadData[] = [];
+        for (const file of files) {
+          const { name, path, contentType, size } = file;
+          const uploadResponse = await s3Service.uploadFile({
+            username: user.username,
+            filename: name,
+            slug: slug,
+            contentType: contentType,
+            fileSize: size,
+            path,
+          });
+    
+          filesWithUrls.push({
+            uploadUrl: uploadResponse.uploadUrl,
             key: uploadResponse.key,
             path,
+            name,
+            size,
+          });
+        }
+
+        await db.code.create({
+          data: {
+            title,
+            description,
+            slug,
+            access,
+            downloadPath,
+            authorId: user.id,
+            files: {
+              createMany: {
+                data: filesWithUrls.map(f => ({
+                  name: f.name,
+                  size: f.size,
+                  key: f.key,
+                  path: f.path,
+                })),
+              },
+            },
           },
-        });
+        });  
 
-        filesWithUrls.push({
-          uploadUrl: uploadResponse.uploadUrl,
-          path,
-        });
-      }
-
-      return filesWithUrls;
-    });
-
-    return NextResponse.json({ filesWithUrls: result }, { status: 201 });
+    return NextResponse.json({ filesWithUrls: filesWithUrls }, { status: 201 });
 
   } catch (error) {
     console.error("Error creating code project:", error);

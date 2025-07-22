@@ -3,6 +3,7 @@ import axios, { AxiosProgressEvent } from 'axios';
 import { generateSlug } from '@/lib/utils';
 import { getContentType } from '@/lib/utils';
 import { toast } from 'sonner';
+import { filterIgnoredFiles, getIgnoreSummary } from '@/lib/file-ignore';
 
 interface UseCodeUploadFormProps {
   onUploadComplete?: () => void;
@@ -39,46 +40,57 @@ export function useCodeUploadForm({
     setFormData(prev => ({ ...prev, title, slug: generateSlug(title) }));
   };
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
     const newFiles = Array.from(files);
-    const forbiddenExtensions = ['.m4a', '.mps'];
-    const validFiles: File[] = [];
-    const rejectedFiles: string[] = [];
+    
+    try {
+      // Filter files based on ignore patterns
+      const filterResult = await filterIgnoredFiles(newFiles);
+      const { validFiles, ignoredFiles, customIgnorePatterns } = filterResult;
 
-    // Filter files based on extensions
-    newFiles.forEach(file => {
-      const fileExtension = file.name
-        .toLowerCase()
-        .substring(file.name.lastIndexOf('.'));
+      // Show toast messages for ignored files
+      if (ignoredFiles.length > 0) {
+        const summary = getIgnoreSummary(ignoredFiles);
+        
+        toast.warning('Some Files Ignored', {
+          description: summary,
+          duration: 5000,
+        });
 
-      if (forbiddenExtensions.includes(fileExtension)) {
-        rejectedFiles.push(file.name);
-      } else {
-        validFiles.push(file);
+        // Log detailed information for debugging
+        console.log('Ignored files:', ignoredFiles);
+        if (customIgnorePatterns.length > 0) {
+          console.log('Custom ignore patterns from .snipkitignore:', customIgnorePatterns);
+        }
       }
-    });
 
-    // Show toast message for rejected files
-    if (rejectedFiles.length > 0) {
-      const filesList =
-        rejectedFiles.length === 1
-          ? rejectedFiles[0]
-          : `${rejectedFiles.length} files (${rejectedFiles.slice(0, 2).join(', ')}${rejectedFiles.length > 2 ? '...' : ''})`;
-
-      toast.error('Upload Failed', {
-        description: `You can't upload ${filesList}. Audio files (.m4a, .mps) are not supported.`,
+      // Add valid files to selection
+      if (validFiles.length > 0) {
+        setSelectedFiles(prev => [...prev, ...validFiles]);
+        setError(null);
+        
+        toast.success(`${validFiles.length} file${validFiles.length > 1 ? 's' : ''} selected`, {
+          description: ignoredFiles.length > 0 
+            ? `${ignoredFiles.length} file${ignoredFiles.length > 1 ? 's' : ''} ignored based on patterns`
+            : undefined,
+        });
+      } else if (ignoredFiles.length > 0) {
+        // All files were ignored
+        toast.error('No Files Selected', {
+          description: 'All selected files were ignored based on ignore patterns',
+        });
+      }
+    } catch (error) {
+      console.error('Error filtering files:', error);
+      toast.error('File Processing Error', {
+        description: 'Failed to process selected files. Please try again.',
       });
     }
 
-    // Only add valid files to selected files
-    if (validFiles.length > 0) {
-      setSelectedFiles(prev => [...prev, ...validFiles]);
-      setError(null);
-    }
-
+    // Clear the input
     event.target.value = '';
   };
 
