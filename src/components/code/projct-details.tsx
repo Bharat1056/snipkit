@@ -32,8 +32,9 @@ interface File {
 
 interface ProjectDetailProps {
   username: string;
-  title: string;
+  slug: string;
   description: string;
+  title: string;
   downloadPath: string;
   access: string;
   files: File[];
@@ -41,8 +42,9 @@ interface ProjectDetailProps {
 
 export function ProjectDetail({
   username,
-  title,
+  slug,
   description,
+  title,
   downloadPath,
   access,
   files,
@@ -170,7 +172,7 @@ export function ProjectDetail({
                       variant="ghost"
                       size="sm"
                       onClick={() => {
-                        const command = `npx snipkit @${username}/${title}/${file.name}`;
+                        const command = `npx snipkit @${username}/${slug}/${file.name}`;
                         navigator.clipboard.writeText(command);
                         toast.success('CLI command copied!', {
                           description: `Copied: ${command}`,
@@ -188,7 +190,7 @@ export function ProjectDetail({
                       asChild
                       className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 flex-1"
                     >
-                      <Link href={`/code/${username}/${title}/${file.name}`}>
+                      <Link href={`/code/${username}/${slug}/${file.name}`}>
                         <Eye className="w-4 h-4 mr-2" />
                         View
                       </Link>

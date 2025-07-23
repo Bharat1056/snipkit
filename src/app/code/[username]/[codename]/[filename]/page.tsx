@@ -1,12 +1,12 @@
-import { db } from "@/lib/db";
-import { notFound } from "next/navigation";
-import { FileViewer } from "@/components/code/project-viewer";
-import { getSignedDownloadUrl } from "@/s3/function";
+import { db } from '@/lib/db';
+import { notFound } from 'next/navigation';
+import { FileViewer } from '@/components/code/project-viewer';
+import { getSignedDownloadUrl } from '@/s3/function';
 
 export default async function CodeFilePage({
   params,
-  }: {
-    params: Promise<{ username: string; codename: string; filename: string }>;
+}: {
+  params: Promise<{ username: string; codename: string; filename: string }>;
 }) {
   const { username, codename, filename } = await params;
 
@@ -20,7 +20,7 @@ export default async function CodeFilePage({
   }
 
   const code = await db.code.findFirst({
-    where: { authorId: user.id, title: codename },
+    where: { authorId: user.id, slug: codename },
     include: { files: { where: { name: filename } } },
   });
 
@@ -38,7 +38,7 @@ export default async function CodeFilePage({
   const downloadUrl = await getSignedDownloadUrl({
     key: file.key as string,
     expiresIn: 3600, // 1 hour
-    disposition: "attachment",
+    disposition: 'attachment',
     filename: file.name,
   });
 
@@ -52,7 +52,7 @@ export default async function CodeFilePage({
       author={username}
       createdAt={code.createdAt.toISOString()}
       downloadUrl={downloadUrl}
-      path={file.path}  
+      path={file.path}
     />
   );
 }
