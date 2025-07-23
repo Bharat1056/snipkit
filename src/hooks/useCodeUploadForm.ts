@@ -40,12 +40,14 @@ export function useCodeUploadForm({
     setFormData(prev => ({ ...prev, title, slug: generateSlug(title) }));
   };
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
     const newFiles = Array.from(files);
-    
+
     try {
       // Filter files based on ignore patterns
       const filterResult = await filterIgnoredFiles(newFiles);
@@ -54,16 +56,18 @@ export function useCodeUploadForm({
       // Show toast messages for ignored files
       if (ignoredFiles.length > 0) {
         const summary = getIgnoreSummary(ignoredFiles);
-        
+
         toast.warning('Some Files Ignored', {
           description: summary,
           duration: 5000,
         });
 
         // Log detailed information for debugging
-        console.log('Ignored files:', ignoredFiles);
         if (customIgnorePatterns.length > 0) {
-          console.log('Custom ignore patterns from .snipkitignore:', customIgnorePatterns);
+          console.log(
+            'Custom ignore patterns from .snipkitignore:',
+            customIgnorePatterns
+          );
         }
       }
 
@@ -71,16 +75,21 @@ export function useCodeUploadForm({
       if (validFiles.length > 0) {
         setSelectedFiles(prev => [...prev, ...validFiles]);
         setError(null);
-        
-        toast.success(`${validFiles.length} file${validFiles.length > 1 ? 's' : ''} selected`, {
-          description: ignoredFiles.length > 0 
-            ? `${ignoredFiles.length} file${ignoredFiles.length > 1 ? 's' : ''} ignored based on patterns`
-            : undefined,
-        });
+
+        toast.success(
+          `${validFiles.length} file${validFiles.length > 1 ? 's' : ''} selected`,
+          {
+            description:
+              ignoredFiles.length > 0
+                ? `${ignoredFiles.length} file${ignoredFiles.length > 1 ? 's' : ''} ignored based on patterns`
+                : undefined,
+          }
+        );
       } else if (ignoredFiles.length > 0) {
         // All files were ignored
         toast.error('No Files Selected', {
-          description: 'All selected files were ignored based on ignore patterns',
+          description:
+            'All selected files were ignored based on ignore patterns',
         });
       }
     } catch (error) {
