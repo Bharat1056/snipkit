@@ -3,11 +3,15 @@ import { notFound } from 'next/navigation';
 import { FileViewer } from '@/components/code/project-viewer';
 import { getSignedDownloadUrl } from '@/s3/function';
 
-export default async function CodeFilePage({
-  params,
-}: {
-  params: Promise<{ username: string; codename: string; filename: string }>;
-}) {
+interface CodeFilePageProps {
+  readonly params: Promise<{
+    readonly username: string;
+    readonly codename: string;
+    readonly filename: string;
+  }>;
+}
+
+export default async function CodeFilePage({ params }: CodeFilePageProps) {
   const { username, codename, filename } = await params;
 
   if (!username || !codename || !filename) {

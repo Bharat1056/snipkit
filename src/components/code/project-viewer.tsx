@@ -1,18 +1,29 @@
-import { Button } from "../ui/button";
-import { Download, Calendar, User, Code2, FileText } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
-import { ScrollArea } from "../ui/scroll-area";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { TerminalCommand } from "../ui/terminal-command";
+'use client';
+
+import { Button } from '../ui/button';
+import {
+  Download,
+  Calendar,
+  User,
+  Code2,
+  FileText,
+  Copy,
+  Check,
+} from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
+import { ScrollArea } from '../ui/scroll-area';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { TerminalCommand } from '../ui/terminal-command';
+import { useState } from 'react';
 
 interface FileViewerProps {
-  code: string;
-  filename: string;
-  author: string;
-  createdAt: string;
-  downloadUrl: string;
-  path: string;
+  readonly code: string;
+  readonly filename: string;
+  readonly author: string;
+  readonly createdAt: string;
+  readonly downloadUrl: string;
+  readonly path: string;
 }
 
 export function FileViewer({
@@ -24,6 +35,17 @@ export function FileViewer({
   path,
 }: FileViewerProps) {
   const command = `npx snipkit @${author}/${path}`;
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy code:', err);
+    }
+  };
 
   return (
     <div className="min-h-screen py-10 px-4">
@@ -52,12 +74,12 @@ export function FileViewer({
                 </div>
               </div>
             </div>
-            
+
             {/* Actions Row */}
             <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-gray-600/30">
-              <Button 
+              <Button
                 asChild
-                size="sm" 
+                size="sm"
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
               >
                 <a href={downloadUrl} download>
@@ -65,7 +87,7 @@ export function FileViewer({
                   Download File
                 </a>
               </Button>
-              
+
               <div className="min-w-0">
                 <TerminalCommand command={command} />
               </div>
@@ -76,17 +98,42 @@ export function FileViewer({
         {/* Code Display */}
         <Card className="border-gray-600/30 bg-gray-800/60 backdrop-blur-md shadow-2xl">
           <CardHeader className="border-b border-gray-600/30 bg-gray-800/30 backdrop-blur-sm pb-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-gradient-to-r from-green-500 to-emerald-600">
-                <Code2 className="h-5 w-5 text-white" />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-gradient-to-r from-green-500 to-emerald-600">
+                  <Code2 className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl font-bold text-white">
+                    Source Code
+                  </CardTitle>
+                  <p className="text-sm text-gray-400">
+                    Interactive code viewer with syntax highlighting
+                  </p>
+                </div>
               </div>
-              <div>
-                <CardTitle className="text-xl font-bold text-white">Source Code</CardTitle>
-                <p className="text-sm text-gray-400">Interactive code viewer with syntax highlighting</p>
-              </div>
+
+              <Button
+                onClick={handleCopyCode}
+                size="sm"
+                variant="outline"
+                className="border-gray-600/30 bg-gray-700/50 hover:bg-gray-600/50 text-white hover:text-white"
+              >
+                {copied ? (
+                  <>
+                    <Check className="w-4 h-4 mr-2 text-green-400" />
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-4 h-4 mr-2" />
+                    Copy Code
+                  </>
+                )}
+              </Button>
             </div>
           </CardHeader>
-          
+
           <CardContent className="p-0">
             <ScrollArea className="max-h-[70vh] overflow-y-auto scrollbar-hidden">
               <SyntaxHighlighter
@@ -94,19 +141,19 @@ export function FileViewer({
                 style={oneDark}
                 customStyle={{
                   margin: 0,
-                  padding: "1.5rem",
-                  backgroundColor: "transparent",
-                  fontSize: "14px",
-                  lineHeight: "1.6",
+                  padding: '1.5rem',
+                  backgroundColor: 'transparent',
+                  fontSize: '14px',
+                  lineHeight: '1.6',
                 }}
                 showLineNumbers
                 wrapLongLines
                 lineNumberStyle={{
-                  minWidth: "3em",
-                  paddingRight: "1em",
-                  color: "#6b7280",
-                  borderRight: "1px solid #374151",
-                  marginRight: "1em"
+                  minWidth: '3em',
+                  paddingRight: '1em',
+                  color: '#6b7280',
+                  borderRight: '1px solid #374151',
+                  marginRight: '1em',
                 }}
               >
                 {code}
