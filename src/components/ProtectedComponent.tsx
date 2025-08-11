@@ -1,16 +1,24 @@
-"use client"
+'use client';
 
-import { useSession } from "next-auth/react";
-import React from "react"
-import LoadingScreen from "./loading-screen";
-import NotAuthenticate from "./not-authenticate";
+import React from 'react';
+import LoadingScreen from './loading-screen';
+import { useAuth } from '@/hooks/auth.hook';
+import { useRouter } from 'next/navigation';
 
-export const ProtectedComponent = ({children}: { children: React.ReactNode }) => {
-    const { data: session, status } = useSession();
+export const ProtectedComponent = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
+  const router = useRouter();
+  const { isLoading, isAuthenticated } = useAuth();
 
-    if (status === "loading") return <LoadingScreen />
+  if (isLoading) return <LoadingScreen />;
 
-    if (!session) return <NotAuthenticate />
+  if (!isAuthenticated) {
+    router.push("/sign-in?callbackUrl=" + encodeURIComponent(window.location.href));
+    return
+  };
 
-    return children;
-}
+  return children;
+};

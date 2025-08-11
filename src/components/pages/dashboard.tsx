@@ -1,6 +1,5 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
 import {
   Card,
   CardContent,
@@ -11,11 +10,32 @@ import {
 import { FileText } from 'lucide-react';
 import { Button } from '../ui/button';
 import { PublicCodeGallery } from '../code/public-code-gallery';
-import React from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/hooks/auth.hook';
+import { useRouter } from 'next/navigation';
+import LoadingScreen from '../loading-screen';
 
 const Dashboard: React.FC = () => {
-  const { data: session } = useSession();
+  const { auth, isLoading, isValidAuth } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    // Only redirect if we're not loading and there's no valid auth
+    if (!isLoading && !isValidAuth) {
+      router.push('/sign-in');
+    }
+  }, [isValidAuth, isLoading, router]);
+
+  // Show loading screen while auth is being rehydrated
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
+  // Don't render anything if not authenticated (will redirect)
+  if (!isValidAuth) {
+    return null;
+  }
 
   return (
     <div>
@@ -26,7 +46,7 @@ const Dashboard: React.FC = () => {
             Dashboard
           </h1>
           <p className="text-gray-400">
-            Welcome back, {session?.user?.username ?? 'User'}!
+            Welcome back, {auth?.username ?? 'User'}!
           </p>
         </div>
         {/* Quick Actions */}

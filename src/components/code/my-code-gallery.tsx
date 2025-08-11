@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, FileCode, Search } from 'lucide-react';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/hooks/auth.hook';
 import { toast } from 'sonner';
 import { CodeFileCard } from './code-card';
 
@@ -37,7 +37,7 @@ interface CodeFile {
 }
 
 export const MyCodeGallery = forwardRef(function CodeGallery(_, ref) {
-  const { data: session } = useSession();
+  const { auth, isValidAuth } = useAuth();
   const [codeFiles, setCodeFiles] = useState<CodeFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -54,7 +54,7 @@ export const MyCodeGallery = forwardRef(function CodeGallery(_, ref) {
 
   const fetchCodeFiles = useCallback(
     async (reset = false) => {
-      if (!session?.user) return;
+      if (!isValidAuth) return;
       if (!reset && (loadingMore || !hasMore)) return;
 
       if (reset) {
@@ -93,14 +93,14 @@ export const MyCodeGallery = forwardRef(function CodeGallery(_, ref) {
         }
       }
     },
-    [session?.user, search, page, loadingMore, hasMore]
+    [isValidAuth, search, page, loadingMore, hasMore]
   );
 
   useEffect(() => {
-    if (session?.user) {
+    if (isValidAuth) {
       fetchCodeFiles(true);
     }
-  }, [session?.user, search]);
+  }, [isValidAuth, search]);
 
   useEffect(() => {
     if (loading || loadingMore || !hasMore || !loadMoreRef.current) return;
@@ -168,7 +168,7 @@ export const MyCodeGallery = forwardRef(function CodeGallery(_, ref) {
     }
   };
 
-  if (!session?.user) {
+  if (!isValidAuth) {
     return (
       <Card>
         <CardContent className="pt-6">
@@ -249,7 +249,7 @@ export const MyCodeGallery = forwardRef(function CodeGallery(_, ref) {
               <CodeFileCard
                 key={file.id}
                 file={file}
-                currentUser={session?.user?.username ?? null}
+                currentUser={auth?.username ?? null}
                 onToggleAccess={() => handleToggleAccess(file)}
                 onDelete={() => handleDelete(file)}
                 deletingId={deletingId}

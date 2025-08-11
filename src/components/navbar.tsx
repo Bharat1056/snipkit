@@ -3,11 +3,11 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { usePathname } from "next/navigation"
-import { useSession, signOut } from "next-auth/react"
+import { useAuth } from '@/hooks/auth.hook'
 
 export function Navbar() {
   const pathname = usePathname()
-  const { data: session, status } = useSession()
+  const { clearAuth, isAuthenticated } = useAuth()
 
   return (
     <nav className="border-b bg-transparent shadow-lg">
@@ -27,41 +27,45 @@ export function Navbar() {
           <div className="flex-grow flex justify-center">
             <div className="hidden md:flex items-center space-x-1">
               <Button
-                variant={pathname === '/dashboard' ? "secondary" : "ghost"}
+                variant={pathname === '/dashboard' ? 'secondary' : 'ghost'}
                 size="sm"
                 asChild
-                className={pathname === '/dashboard' ? "bg-gray-700/50 text-white" : "text-gray-300 hover:text-white hover:bg-gray-700/50"}
+                className={
+                  pathname === '/dashboard'
+                    ? 'bg-gray-700/50 text-white'
+                    : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+                }
               >
                 <Link href="/dashboard">Dashboard</Link>
               </Button>
-              {session && (
+              {isAuthenticated && (
                 <Button
-                  variant={pathname === '/me' ? "secondary" : "ghost"}
+                  variant={pathname === '/me' ? 'secondary' : 'ghost'}
                   size="sm"
                   asChild
-                  className={pathname === '/me' ? "bg-gray-700/50 text-white" : "text-gray-300 hover:text-white hover:bg-gray-700/50"}
+                  className={
+                    pathname === '/me'
+                      ? 'bg-gray-700/50 text-white'
+                      : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+                  }
                 >
-                    <Link href="/me">Me</Link>
-                  </Button>
+                  <Link href="/me">Me</Link>
+                </Button>
               )}
             </div>
           </div>
 
           {/* Right: Auth buttons */}
           <div className="flex-shrink-0 flex items-center space-x-3">
-            {status === "loading" ? (
-              <div className="w-20 h-8 bg-gray-700/50 animate-pulse rounded"></div>
-            ) : session ? (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => signOut({ callbackUrl: "/" })}
-                  className="border-gray-600 bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 hover:text-white"
-                >
-                  Sign Out
-                </Button>
-              </>
+            {isAuthenticated ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearAuth}
+                className="border-gray-600 bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 hover:text-white"
+              >
+                Sign Out
+              </Button>
             ) : (
               <>
                 <Button
@@ -85,5 +89,5 @@ export function Navbar() {
         </div>
       </div>
     </nav>
-  )
+  );
 }

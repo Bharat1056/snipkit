@@ -1,5 +1,3 @@
-// Code-related shared types
-
 export interface CodeFile {
   id: string;
   title: string;
@@ -11,4 +9,4 @@ export interface CodeFile {
   createdAt: string;
   user: { username: string };
   downloadUrl?: string;
-} 
+}

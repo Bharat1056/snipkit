@@ -1,38 +1,49 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { Navbar } from "@/components/navbar";
-import { Footer } from "@/components/footer";
-import { Toaster } from "@/components/ui/sonner"
+import type { Metadata } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
+import './globals.css';
+import { Navbar } from '@/components/navbar';
+import { Footer } from '@/components/footer';
+import { Toaster } from '@/components/ui/sonner';
+import Providers from '@/providers/Providers';
+
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
 });
-import SessionWrapper from "@/components/SessionWrapper";
-import { Analytics } from "@vercel/analytics/next"
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://snipkit.bharatpanigrahi.com/'),
   title: {
-    default: "Snipkit - The Ultimate Code Snippet Manager for Developers",
+    default: 'Snipkit - The Ultimate Code Snippet Manager for Developers',
     template: `%s | Snipkit`,
   },
-  description: "Save, organize, and share your code snippets effortlessly. Boost your productivity with a personal cloud-based snippet library, built for modern developers.",
-  keywords: ["code snippets", "developer tools", "productivity", "code manager", "react", "next.js", "typescript", "share code"],
-  authors: [{ name: "Bharat Panigrahi" }],
-  creator: "Bharat Panigrahi",
+  description:
+    'Save, organize, and share your code snippets effortlessly. Boost your productivity with a personal cloud-based snippet library, built for modern developers.',
+  keywords: [
+    'code snippets',
+    'developer tools',
+    'productivity',
+    'code manager',
+    'react',
+    'next.js',
+    'typescript',
+    'share code',
+  ],
+  authors: [{ name: 'Bharat Panigrahi' }],
+  creator: 'Bharat Panigrahi',
   openGraph: {
-    type: "website",
-    locale: "en_US",
-    url: "https://snipkit.bharatpanigrahi.com/",
-    title: "Snipkit - The Ultimate Code Snippet Manager",
-    description: "Save, organize, and share your code snippets effortlessly with Snipkit. Your personal cloud-based snippet library.",
-    siteName: "Snipkit",
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://snipkit.bharatpanigrahi.com/',
+    title: 'Snipkit - The Ultimate Code Snippet Manager',
+    description:
+      'Save, organize, and share your code snippets effortlessly with Snipkit. Your personal cloud-based snippet library.',
+    siteName: 'Snipkit',
     images: [
       {
         url: '/og.png',
@@ -43,10 +54,11 @@ export const metadata: Metadata = {
     ],
   },
   twitter: {
-    card: "summary_large_image",
-    title: "Snipkit - The Ultimate Code Snippet Manager",
-    description: "Save, organize, and share your code snippets effortlessly with Snipkit. Your personal cloud-based snippet library.",
-    creator: '@Bharat1056', 
+    card: 'summary_large_image',
+    title: 'Snipkit - The Ultimate Code Snippet Manager',
+    description:
+      'Save, organize, and share your code snippets effortlessly with Snipkit. Your personal cloud-based snippet library.',
+    creator: '@Bharat1056',
     images: ['/og.png'],
   },
   icons: {
@@ -78,19 +90,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <SessionWrapper>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-gradient-to-br from-gray-900 via-gray-800 to-black`}
       >
-         <Navbar />
-        <main className="flex-1">
-          {children}
-        </main>
-        <Footer />
-        <Analytics />
-        <Toaster />
+        <Providers>
+          <Navbar />
+          <main className="flex-1">{children}</main>
+          <Footer />
+          <Toaster />
+        </Providers>
       </body>
-      </SessionWrapper>
     </html>
   );
 }

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import axios, { AxiosProgressEvent } from 'axios';
-import { generateSlug } from '@/lib/utils';
-import { getContentType } from '@/lib/utils';
+import { generateSlug, getContentType } from '@/lib/utils';
 import { toast } from 'sonner';
 import { filterIgnoredFiles, getIgnoreSummary } from '@/lib/file-ignore';
 
@@ -51,7 +50,7 @@ export function useCodeUploadForm({
     try {
       // Filter files based on ignore patterns
       const filterResult = await filterIgnoredFiles(newFiles);
-      const { validFiles, ignoredFiles, customIgnorePatterns } = filterResult;
+      const { validFiles, ignoredFiles, ignorePatterns } = filterResult;
 
       // Show toast messages for ignored files
       if (ignoredFiles.length > 0) {
@@ -63,10 +62,10 @@ export function useCodeUploadForm({
         });
 
         // Log detailed information for debugging
-        if (customIgnorePatterns.length > 0) {
+        if (ignorePatterns.length > 0) {
           console.log(
             'Custom ignore patterns from .snipkitignore:',
-            customIgnorePatterns
+            ignorePatterns.join(', ')
           );
         }
       }
@@ -130,6 +129,7 @@ export function useCodeUploadForm({
         size: file.size,
       }));
 
+      // API Response (Upload URLs)
       const response = await axios.post('/api/code', {
         ...formData,
         files: filesToUpload,

@@ -1,52 +1,9 @@
+import { FilterResult } from '@/types/file-ignore.type';
 import { minimatch } from 'minimatch';
-
-const CUSTOM_IGNORE_FILENAME = '.snipkitignore';
-const DEFAULT_IGNORE_PATTERNS = [
-  '**/node_modules/**',
-  '**/git/**',
-  '**/next/**',
-  '**/turbo/**',
-  '**/vercel/**',
-  '**/dist/**',
-  '**/build/**',
-  '**/coverage/**',
-  '**/cache/**',
-  '*.log',
-  '*.DS_Store',
-  '**/idea/**',
-  '**/vscode/**',
-  '**/__pycache__/**',
-  '*.pyc',
-  '**/venv/**',
-  '**/venv/**',
-  '**/env/**',
-  '*.svg',
-  '*.png',
-  '*.jpg',
-  '*.jpeg',
-  '*.m4a',
-  '*.mps',
-  '**/pytest_cache/**',
-  '**/terraform/**',
-  '**/target/**',
-  '**/vendor/**',
-  '**/cargo/**',
-  '**/gradle/**',
-  '**/mvn/**',
-  '*.class',
-  '*.swp',
-  '*.iml',
-];
-
-interface FilterResult {
-  validFiles: File[];
-  ignoredFiles: Array<{
-    file: File;
-    reason: string;
-    pattern: string;
-  }>;
-  customIgnorePatterns: string[];
-}
+import {
+  CUSTOM_IGNORE_FILENAME,
+  DEFAULT_IGNORE_PATTERNS,
+} from '@/constants/file-ignore.constant';
 
 /**
  * Parse ignore patterns from .snipkitignore file content
@@ -84,6 +41,7 @@ function isIgnored(
  * Read and parse .snipkitignore file if present in the file list
  */
 async function readCustomIgnorePatterns(files: File[]): Promise<string[]> {
+  // Find the custom ignore file
   const ignoreFile = files.find(file => file.name === CUSTOM_IGNORE_FILENAME);
 
   if (!ignoreFile) {
@@ -112,6 +70,8 @@ export async function filterIgnoredFiles(files: File[]): Promise<FilterResult> {
     pattern: string;
   }> = [];
 
+  const patthernsToCheck = [];
+
   for (const file of files) {
     // Always exclude the .snipkitignore file itself
     if (file.name === CUSTOM_IGNORE_FILENAME) {
@@ -123,11 +83,12 @@ export async function filterIgnoredFiles(files: File[]): Promise<FilterResult> {
       continue;
     }
 
-    // Get the file path (use webkitRelativePath if available, otherwise just the name)
     const filePath = (file as any).webkitRelativePath || file.name; // eslint-disable-line @typescript-eslint/no-explicit-any
 
-    // Check against all patterns
+    // check default ignore patterns first
     const defaultPatternMatch = isIgnored(filePath, DEFAULT_IGNORE_PATTERNS);
+
+    // check custom ignore patterns
     const customPatternMatch =
       customIgnorePatterns.length > 0
         ? isIgnored(filePath, customIgnorePatterns)
@@ -139,12 +100,14 @@ export async function filterIgnoredFiles(files: File[]): Promise<FilterResult> {
         reason: 'Matched default ignore pattern',
         pattern: defaultPatternMatch.matchedPattern!,
       });
+      patthernsToCheck.push(defaultPatternMatch.matchedPattern!);
     } else if (customPatternMatch.ignored) {
       ignoredFiles.push({
         file,
         reason: 'Matched custom ignore pattern',
         pattern: customPatternMatch.matchedPattern!,
       });
+      patthernsToCheck.push(customPatternMatch.matchedPattern!);
     } else {
       validFiles.push(file);
     }
@@ -153,7 +116,7 @@ export async function filterIgnoredFiles(files: File[]): Promise<FilterResult> {
   return {
     validFiles,
     ignoredFiles,
-    customIgnorePatterns,
+    ignorePatterns: patthernsToCheck,
   };
 }
 
@@ -185,8 +148,3 @@ export function getIgnoreSummary(
 
   return `Ignored ${ignoredFiles.length} file${ignoredFiles.length > 1 ? 's' : ''}: ${summaries.join('; ')}`;
 }
-
-/**
- * Export constants for external use
- */
-export { DEFAULT_IGNORE_PATTERNS, CUSTOM_IGNORE_FILENAME };

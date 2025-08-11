@@ -41,7 +41,7 @@ import {
   signUpSchema,
   type SignUpFormData,
   validatePasswordStrength,
-} from '@/lib/validations/auth';
+} from '@/lib/validations/auth.validation';
 import axios from 'axios';
 import debounce from 'lodash.debounce';
 
@@ -80,42 +80,42 @@ export function SignUpForm() {
     setPasswordStrength(validatePasswordStrength(watchPassword));
   }, [watchPassword]);
 
-  useEffect(() => {
-    debouncedCheckRef.current = debounce(async (newUsername: string) => {
-      if (!newUsername) {
-        setUsernameError(null);
-        setIsCheckingUsername(false);
-        return;
-      }
+  // useEffect(() => {
+  //   debouncedCheckRef.current = debounce(async (newUsername: string) => {
+  //     if (!newUsername) {
+  //       setUsernameError(null);
+  //       setIsCheckingUsername(false);
+  //       return;
+  //     }
 
-      if (newUsername.length < 3) {
-        setUsernameError('Username must be at least 3 characters long');
-        setIsCheckingUsername(false);
-        return;
-      }
+  //     if (newUsername.length < 3) {
+  //       setUsernameError('Username must be at least 3 characters long');
+  //       setIsCheckingUsername(false);
+  //       return;
+  //     }
 
-      setIsCheckingUsername(true);
-      try {
-        const { data } = await axios.post('/api/user/username-check', {
-          username: newUsername,
-        });
-        if (data.exists) {
-          setUsernameError('Username is already taken');
-        } else {
-          setUsernameError(null);
-        }
-      } catch (error) {
-        console.error('Username check error:', error);
-        setUsernameError('Error checking username availability');
-      } finally {
-        setIsCheckingUsername(false);
-      }
-    }, 500);
+  //     setIsCheckingUsername(true);
+  //     try {
+  //       const { data } = await axios.post('/api/user/username-check', {
+  //         username: newUsername,
+  //       });
+  //       if (data.exists) {
+  //         setUsernameError('Username is already taken');
+  //       } else {
+  //         setUsernameError(null);
+  //       }
+  //     } catch (error) {
+  //       console.error('Username check error:', error);
+  //       setUsernameError('Error checking username availability');
+  //     } finally {
+  //       setIsCheckingUsername(false);
+  //     }
+  //   }, 500);
 
-    return () => {
-      debouncedCheckRef.current?.cancel();
-    };
-  }, []);
+  //   return () => {
+  //     debouncedCheckRef.current?.cancel();
+  //   };
+  // }, []);
 
   useEffect(() => {
     debouncedCheckRef.current?.(username);
@@ -135,7 +135,14 @@ export function SignUpForm() {
     setSuccess(null);
 
     try {
-      await axios.post('/api/user', {
+      // await axios.post('/api/user', {
+      //   fullName: data.name.trim(),
+      //   username: data.username.trim(),
+      //   email: data.email.toLowerCase(),
+      //   password: data.password,
+      // });
+
+      await axios.post('http://localhost:5000/api/v1/auth/signup', {
         fullName: data.name.trim(),
         username: data.username.trim(),
         email: data.email.toLowerCase(),

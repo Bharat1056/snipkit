@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { CodeUpload } from '@/components/code/code-upload';
 import { CodeWriter } from '@/components/code/code-writer';
@@ -15,31 +14,33 @@ import {
 import { Button } from '@/components/ui/button';
 import { Upload, Plus, Code, User } from 'lucide-react';
 import LoadingScreen from '@/components/loading-screen';
+import { useAuth } from '@/hooks/auth.hook';
 
 interface CodeGalleryRef {
   refetch: () => void;
 }
 
 export default function MePage() {
-  const { status } = useSession();
+  const { auth, isLoading, isValidAuth } = useAuth();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isWriteModalOpen, setWriteModalOpen] = useState(false);
   const galleryRef = useRef<CodeGalleryRef>(null);
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    // Only redirect if we're not loading and there's no valid auth
+    if (!isLoading && !isValidAuth) {
       router.push('/sign-in');
     }
-  }, [status, router]);
+  }, [isValidAuth, isLoading, router]);
 
-  // Show loading while checking authentication
-  if (status === 'loading') {
+  // Show loading screen while auth is being rehydrated
+  if (isLoading) {
     return <LoadingScreen />;
   }
 
   // Don't render anything if not authenticated (will redirect)
-  if (status === 'unauthenticated') {
+  if (!isValidAuth) {
     return null;
   }
 

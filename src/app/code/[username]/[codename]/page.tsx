@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation';
 import { ProjectDetail } from '@/components/code/projct-details';
-import { db } from '@/lib/db';
 import { formatFileSize } from '@/lib/utils';
 
 export default async function ProjectDetailPage({

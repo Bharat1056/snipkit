@@ -1,32 +1,40 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Zap } from "lucide-react";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import axios from "axios";
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Loader2, Zap } from 'lucide-react';
+import { useAuth } from '@/hooks/auth.hook';
+import { useRouter } from 'next/navigation';
+import axios from 'axios';
 
 const languages = [
-  { name: "JavaScript", extensions: [".js", ".jsx", ".mjs", ".cjs"], highlighter: 'javascript' },
-  { name: "TypeScript", extensions: [".ts", ".tsx"], highlighter: 'typescript' },
-  { name: "Java", extensions: [".java"], highlighter: 'java' },
-  { name: "Go", extensions: [".go"], highlighter: 'go' },
-  { name: "Python", extensions: [".py"], highlighter: 'python' },
-  { name: "Rust", extensions: [".rs"], highlighter: 'rust' },
-  { name: "HTML", extensions: [".html", ".htm"], highlighter: 'html' },
-  { name: "CSS", extensions: [".css"], highlighter: 'css' },
+  {
+    name: 'JavaScript',
+    extensions: ['.js', '.jsx', '.mjs', '.cjs'],
+    highlighter: 'javascript',
+  },
+  {
+    name: 'TypeScript',
+    extensions: ['.ts', '.tsx'],
+    highlighter: 'typescript',
+  },
+  { name: 'Java', extensions: ['.java'], highlighter: 'java' },
+  { name: 'Go', extensions: ['.go'], highlighter: 'go' },
+  { name: 'Python', extensions: ['.py'], highlighter: 'python' },
+  { name: 'Rust', extensions: ['.rs'], highlighter: 'rust' },
+  { name: 'HTML', extensions: ['.html', '.htm'], highlighter: 'html' },
+  { name: 'CSS', extensions: ['.css'], highlighter: 'css' },
 ];
 
 const LANGUAGE_MAP: { [key: string]: string } = {
@@ -78,24 +86,30 @@ function slugify(text: string) {
   return text
     .toLowerCase()
     .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }
 
-export function CodeWriter({ onWriteComplete }: { onWriteComplete?: () => void }) {
-  const { data: session } = useSession();
+export function CodeWriter({
+  onWriteComplete,
+}: {
+  onWriteComplete?: () => void;
+}) {
+  const { auth, isValidAuth } = useAuth();
   const router = useRouter();
 
-  const [title, setTitle] = useState("");
-  const [slug, setSlug] = useState("");
+  const [title, setTitle] = useState('');
+  const [slug, setSlug] = useState('');
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
-  const [description, setDescription] = useState("");
-  const [exploitLocation, setExploitLocation] = useState("");
+  const [description, setDescription] = useState('');
+  const [exploitLocation, setExploitLocation] = useState('');
   const [language, setLanguage] = useState(languages[0].name);
-  const [availableExtensions, setAvailableExtensions] = useState(languages[0].extensions);
+  const [availableExtensions, setAvailableExtensions] = useState(
+    languages[0].extensions
+  );
   const [extension, setExtension] = useState(languages[0].extensions[0]);
-  const [code, setCode] = useState("");
-  const [access, setAccess] = useState("private");
+  const [code, setCode] = useState('');
+  const [access, setAccess] = useState('private');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -103,7 +117,7 @@ export function CodeWriter({ onWriteComplete }: { onWriteComplete?: () => void }
   const [isFormatting, setIsFormatting] = useState(false);
 
   useEffect(() => {
-    const selectedLanguage = languages.find((lang) => lang.name === language);
+    const selectedLanguage = languages.find(lang => lang.name === language);
     if (selectedLanguage) {
       setAvailableExtensions(selectedLanguage.extensions);
       setExtension(selectedLanguage.extensions[0]);
@@ -153,10 +167,10 @@ export function CodeWriter({ onWriteComplete }: { onWriteComplete?: () => void }
       const ext = extension.toLowerCase();
       const lang = LANGUAGE_MAP[ext] || 'TEXT';
 
-      const response = await fetch("/api/code/format", {
-        method: "POST",
+      const response = await fetch('/api/code/format', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           code,
@@ -165,14 +179,14 @@ export function CodeWriter({ onWriteComplete }: { onWriteComplete?: () => void }
       });
 
       if (!response.ok) {
-        throw new Error("Failed to format code");
+        throw new Error('Failed to format code');
       }
 
       const { formattedCode } = await response.json();
       setCode(formattedCode);
     } catch (err) {
-      console.error("Error formatting code:", err);
-      setError("Failed to format code");
+      console.error('Error formatting code:', err);
+      setError('Failed to format code');
     } finally {
       setIsFormatting(false);
     }
@@ -180,7 +194,7 @@ export function CodeWriter({ onWriteComplete }: { onWriteComplete?: () => void }
 
   const handleSubmit = async () => {
     if (!title || !slug || !code) {
-      setError("Please fill in all required fields");
+      setError('Please fill in all required fields');
       return;
     }
 
@@ -192,14 +206,14 @@ export function CodeWriter({ onWriteComplete }: { onWriteComplete?: () => void }
     try {
       const ext = extension.toLowerCase();
       const mime = getMimeType(ext);
-      const filename = (slug || "index") + extension;
+      const filename = (slug || 'index') + extension;
       const file = new File([code], filename, { type: mime });
 
       // Step 1: Get upload URL
-      const response = await fetch("/api/code", {
-        method: "POST",
+      const response = await fetch('/api/code', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           title,
@@ -207,17 +221,19 @@ export function CodeWriter({ onWriteComplete }: { onWriteComplete?: () => void }
           slug,
           access,
           downloadPath: exploitLocation,
-          files: [{
-            name: filename,
-            path: filename,
-            contentType: mime,
-            size: file.size,
-          }],
+          files: [
+            {
+              name: filename,
+              path: filename,
+              contentType: mime,
+              size: file.size,
+            },
+          ],
         }),
       });
 
       if (!response.ok) {
-        let errorMessage = "Failed to get upload URL";
+        let errorMessage = 'Failed to get upload URL';
         try {
           const errorData = await response.json();
           errorMessage = errorData.error ?? errorMessage;
@@ -230,19 +246,20 @@ export function CodeWriter({ onWriteComplete }: { onWriteComplete?: () => void }
       const { filesWithUrls } = await response.json();
 
       if (!filesWithUrls || filesWithUrls.length === 0) {
-        throw new Error("Did not receive an upload URL from the server.");
+        throw new Error('Did not receive an upload URL from the server.');
       }
-      
+
       const { uploadUrl } = filesWithUrls[0];
 
       // Step 2: Upload to S3
       await axios.put(uploadUrl, file, {
         headers: {
-          "Content-Type": mime,
-          "Cache-Control": "no-cache",
-          "Content-Disposition": `attachment; filename="${filename}"`,
+          'Content-Type': mime,
+          'Cache-Control': 'no-cache',
+          'Content-Disposition': `attachment; filename="${filename}"`,
         },
-        onUploadProgress: (progressEvent: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+        onUploadProgress: (progressEvent: any) => {
+          // eslint-disable-line @typescript-eslint/no-explicit-any
           const percentCompleted = Math.round(
             (progressEvent.loaded * 100) / progressEvent.total
           );
@@ -250,34 +267,32 @@ export function CodeWriter({ onWriteComplete }: { onWriteComplete?: () => void }
         },
       });
 
-      setSuccess("Code uploaded successfully!");
+      setSuccess('Code uploaded successfully!');
       setUploadProgress(100);
 
       // Reset form
-      setTitle("");
-      setSlug("");
-      setDescription("");
-      setExploitLocation("");
-      setCode("");
+      setTitle('');
+      setSlug('');
+      setDescription('');
+      setExploitLocation('');
+      setCode('');
       setSlugManuallyEdited(false);
 
       if (onWriteComplete) onWriteComplete();
       router.refresh();
     } catch (err) {
-      console.error("Upload error:", err);
-      setError(err instanceof Error ? err.message : "Upload failed");
+      console.error('Upload error:', err);
+      setError(err instanceof Error ? err.message : 'Upload failed');
     } finally {
       setIsUploading(false);
     }
   };
 
-  if (!session?.user) {
+  if (!isValidAuth) {
     return (
       <div className="p-6">
         <Alert>
-          <AlertDescription>
-            Please sign in to upload code.
-          </AlertDescription>
+          <AlertDescription>Please sign in to upload code.</AlertDescription>
         </Alert>
       </div>
     );
@@ -306,7 +321,7 @@ export function CodeWriter({ onWriteComplete }: { onWriteComplete?: () => void }
               <SelectValue placeholder="Select a language" />
             </SelectTrigger>
             <SelectContent>
-              {languages.map((lang) => (
+              {languages.map(lang => (
                 <SelectItem key={lang.name} value={lang.name}>
                   {lang.name}
                 </SelectItem>
@@ -321,7 +336,7 @@ export function CodeWriter({ onWriteComplete }: { onWriteComplete?: () => void }
               <SelectValue placeholder="Select an extension" />
             </SelectTrigger>
             <SelectContent>
-              {availableExtensions.map((ext) => (
+              {availableExtensions.map(ext => (
                 <SelectItem key={ext} value={ext}>
                   {ext}
                 </SelectItem>
@@ -352,7 +367,7 @@ export function CodeWriter({ onWriteComplete }: { onWriteComplete?: () => void }
         <Textarea
           id="code"
           value={code}
-          onChange={(e) => setCode(e.target.value)}
+          onChange={e => setCode(e.target.value)}
           placeholder="// Write your code here..."
           className="h-[400px] font-mono text-base bg-[#1e1e1e] text-[#d4d4d4] border border-[#2d2d2d] rounded-md px-4 py-3 leading-relaxed focus:outline-none focus:border-[#007acc] shadow-[0_2px_8px_#00000020] transition-all resize-none overflow-y-auto scrollbar-hidden"
           disabled={isUploading}
@@ -365,7 +380,7 @@ export function CodeWriter({ onWriteComplete }: { onWriteComplete?: () => void }
         <Input
           id="title"
           value={title}
-          onChange={(e) => {
+          onChange={e => {
             setTitle(e.target.value);
             if (!slugManuallyEdited) setSlug(slugify(e.target.value));
           }}
@@ -378,7 +393,7 @@ export function CodeWriter({ onWriteComplete }: { onWriteComplete?: () => void }
         <Input
           id="slug"
           value={slug}
-          onChange={(e) => {
+          onChange={e => {
             setSlug(e.target.value);
             setSlugManuallyEdited(true);
           }}
@@ -396,7 +411,7 @@ export function CodeWriter({ onWriteComplete }: { onWriteComplete?: () => void }
         <Input
           id="description"
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={e => setDescription(e.target.value)}
           placeholder="A short description of your snippet"
           disabled={isUploading}
         />
@@ -408,7 +423,7 @@ export function CodeWriter({ onWriteComplete }: { onWriteComplete?: () => void }
         <Input
           id="exploitLocation"
           value={exploitLocation}
-          onChange={(e) => setExploitLocation(e.target.value)}
+          onChange={e => setExploitLocation(e.target.value)}
           placeholder="e.g., /api/users, /admin/panel"
           disabled={isUploading}
         />
@@ -466,7 +481,7 @@ export function CodeWriter({ onWriteComplete }: { onWriteComplete?: () => void }
             Uploading...
           </>
         ) : (
-          "Submit"
+          'Submit'
         )}
       </Button>
     </div>

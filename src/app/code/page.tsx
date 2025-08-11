@@ -3,10 +3,10 @@
 import { Button } from '@/components/ui/button';
 import { Code, Plus, Upload, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/hooks/auth.hook';
 
 export default function CodePage() {
-  const { data: session } = useSession();
+  const { auth } = useAuth();
 
   return (
     <div className="container mx-auto py-8">
@@ -24,7 +24,7 @@ export default function CodePage() {
         </div>
 
         {/* Call-to-action for authenticated users */}
-        {session && (
+        {auth && (
           <div className="mb-12 p-6 rounded-xl bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
@@ -51,7 +51,7 @@ export default function CodePage() {
         )}
 
         {/* Call-to-action for unauthenticated users */}
-        {!session && (
+        {!auth && (
           <div className="mb-12 p-6 rounded-xl bg-gradient-to-r from-green-500/10 to-blue-500/10 border border-green-500/20">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
