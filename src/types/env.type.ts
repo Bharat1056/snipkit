@@ -5,4 +5,5 @@ export const envSchema = z.object({
     .enum(['development', 'production', 'test'])
     .default('development'),
   NEXT_PUBLIC_API_URL: z.string().url(),
+  NEXT_PUBLIC_API_VERSION: z.string().default('v1'),
 });
