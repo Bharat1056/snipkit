@@ -67,9 +67,7 @@ export default function MePage() {
             My Code Snippets
           </h1>
           <p className="text-gray-400">
-            Upload, view, and manage your personal code files. Supports
-            JavaScript, TypeScript, Python, Go, and Rust with syntax
-            highlighting.
+            Upload, view, and manage your personal code files.
           </p>
         </div>
 
