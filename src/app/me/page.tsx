@@ -93,30 +93,6 @@ export default function MePage() {
               </div>
             </DialogContent>
           </Dialog>
-
-          <Dialog open={isWriteModalOpen} onOpenChange={setWriteModalOpen}>
-            <DialogTrigger asChild>
-              <Button
-                variant="default"
-                size="lg"
-                className="flex items-center gap-2"
-              >
-                <Plus className="w-5 h-5" />
-                Write Code
-              </Button>
-            </DialogTrigger>
-            <DialogContent
-              className="flex flex-col items-center justify-center p-0 bg-background w-full max-w-[96vw] md:max-w-xl max-h-[95vh] rounded-2xl shadow-2xl overflow-y-auto scrollbar-hidden"
-              style={{ border: 'none' }}
-            >
-              <div className="w-full flex flex-col items-center justify-center p-0">
-                <DialogTitle className="w-full px-6 pt-6 pb-0 text-left text-xl font-semibold">
-                  Write Code
-                </DialogTitle>
-                <CodeWriter onWriteComplete={handleWriteComplete} />
-              </div>
-            </DialogContent>
-          </Dialog>
         </div>
 
         {/* Code snippets */}
