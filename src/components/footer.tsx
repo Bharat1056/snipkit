@@ -40,9 +40,7 @@ export function Footer() {
         <div className="mt-12 pt-8 border-t border-gray-700/50">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="flex space-x-6 text-sm text-gray-400">
-              <Link href="/privacy-policy" className="hover:text-white transition-colors">
-                Privacy Policy
-              </Link>
+              
               <Link href="/terms-of-service" className="hover:text-white transition-colors">
                 Terms of Service
               </Link>
