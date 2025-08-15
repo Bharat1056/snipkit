@@ -1,40 +1,23 @@
 'use client';
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '../ui/card';
-import { FileText } from 'lucide-react';
-import { Button } from '../ui/button';
 import { PublicCodeGallery } from '../code/public-code-gallery';
 import React, { useEffect } from 'react';
-import Link from 'next/link';
 import { useAuth } from '@/hooks/auth.hook';
 import { useRouter } from 'next/navigation';
 import LoadingScreen from '../loading-screen';
 
 const Dashboard: React.FC = () => {
-  const { auth, isLoading, isValidAuth } = useAuth();
+  const { user, isLoading, isAuthenticated } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    // Only redirect if we're not loading and there's no valid auth
-    if (!isLoading && !isValidAuth) {
+    if (!isAuthenticated) {
       router.push('/sign-in');
     }
-  }, [isValidAuth, isLoading, router]);
+  }, [isAuthenticated, isLoading, router]);
 
-  // Show loading screen while auth is being rehydrated
   if (isLoading) {
     return <LoadingScreen />;
-  }
-
-  // Don't render anything if not authenticated (will redirect)
-  if (!isValidAuth) {
-    return null;
   }
 
   return (
@@ -46,31 +29,8 @@ const Dashboard: React.FC = () => {
             Dashboard
           </h1>
           <p className="text-gray-400">
-            Welcome back, {auth?.username ?? 'User'}!
+            Welcome back, {user?.username ?? 'User'}!
           </p>
-        </div>
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <div className="p-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600">
-                  <FileText className="h-5 w-5 text-white" />
-                </div>
-                My Codes
-              </CardTitle>
-              <CardDescription>Manage your code snippets</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button
-                asChild
-                variant="outline"
-                className="w-full border-gray-600 bg-gray-700/50 text-gray-300 hover:bg-gray-600/50 hover:text-white"
-              >
-                <Link href="/me">View Codes</Link>
-              </Button>
-            </CardContent>
-          </Card>
         </div>
         {/* Public Code Snippets */}
         <div className="mb-8">
