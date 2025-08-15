@@ -5,22 +5,20 @@ import LoadingScreen from './loading-screen';
 import { useAuth } from '@/hooks/auth.hook';
 import { useRouter } from 'next/navigation';
 
-type ProtectedComponentProps = {
-  children: (props: { user: any }) => React.ReactNode;
-};
-
-export const ProtectedComponent = ({ children }: ProtectedComponentProps) => {
+export const ProtectedComponent = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   const router = useRouter();
-  const { user, isLoading, isAuthenticated } = useAuth();
+  const { isLoading, isAuthenticated } = useAuth();
 
   if (isLoading) return <LoadingScreen />;
 
   if (!isAuthenticated) {
-    router.push(
-      '/sign-in?callbackUrl=' + encodeURIComponent(window.location.href)
-    );
-    return null;
-  }
+    router.push("/sign-in?callbackUrl=" + encodeURIComponent(window.location.href));
+    return
+  };
 
-  return <>{children({ user })}</>;
+  return children;
 };

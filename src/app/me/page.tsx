@@ -4,7 +4,7 @@ import MePage from '@/components/views/Me';
 const Page = () => {
   return (
     <ProtectedComponent>
-      {({ user }) => <MePage user={user} />}
+      <MePage />
     </ProtectedComponent>
   );
 };

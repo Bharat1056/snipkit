@@ -1,17 +1,7 @@
 'use client';
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '../ui/card';
-import { FileText } from 'lucide-react';
-import { Button } from '../ui/button';
 import { PublicCodeGallery } from '../code/public-code-gallery';
 import React, { useEffect } from 'react';
-import Link from 'next/link';
 import { useAuth } from '@/hooks/auth.hook';
 import { useRouter } from 'next/navigation';
 import LoadingScreen from '../loading-screen';

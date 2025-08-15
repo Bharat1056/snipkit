@@ -8,7 +8,6 @@ import {
   Dialog,
   DialogTrigger,
   DialogContent,
-  DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Upload, Code, User } from 'lucide-react';
@@ -19,7 +18,7 @@ interface CodeGalleryRef {
   refetch: () => void;
 }
 
-export default function MePage({ user }: { user: any }) {
+export default function MePage() {
   const { isLoading, isAuthenticated } = useAuth();
   const router = useRouter();
   const [open, setOpen] = useState(false);
