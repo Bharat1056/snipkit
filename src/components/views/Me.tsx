@@ -4,11 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { CodeUpload } from '@/components/code/code-upload';
 import { MyCodeGallery } from '@/components/code/my-code-gallery';
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-} from '@/components/ui/dialog';
+import { Dialog, DialogTrigger, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Upload, Code, User } from 'lucide-react';
 import LoadingScreen from '@/components/loading-screen';
@@ -22,7 +18,6 @@ export default function MePage() {
   const { isLoading, isAuthenticated } = useAuth();
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [isWriteModalOpen, setWriteModalOpen] = useState(false);
   const galleryRef = useRef<CodeGalleryRef>(null);
 
   useEffect(() => {
