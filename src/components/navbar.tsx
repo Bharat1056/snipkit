@@ -1,13 +1,33 @@
-"use client"
+'use client';
 
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { usePathname } from "next/navigation"
-import { useAuth } from '@/hooks/auth.hook'
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { usePathname } from 'next/navigation';
+import { useAuth } from '@/hooks/auth.hook';
+import { User, LogOut } from 'lucide-react';
 
 export function Navbar() {
-  const pathname = usePathname()
-  const { clearAuth, isAuthenticated } = useAuth()
+  const pathname = usePathname();
+  const { clearAuth, isAuthenticated, user } = useAuth();
+
+  // Generate user initials for avatar fallback
+  const getUserInitials = (name?: string) => {
+    if (!name) return 'U';
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   return (
     <nav className="border-b bg-transparent shadow-lg">
@@ -23,49 +43,58 @@ export function Navbar() {
             </Link>
           </div>
 
-          {/* Center: Nav buttons */}
-          <div className="flex-grow flex justify-center">
-            <div className="hidden md:flex items-center space-x-1">
-              <Button
-                variant={pathname === '/dashboard' ? 'secondary' : 'ghost'}
-                size="sm"
-                asChild
-                className={
-                  pathname === '/dashboard'
-                    ? 'bg-gray-700/50 text-white'
-                    : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
-                }
-              >
-                <Link href="/dashboard">Dashboard</Link>
-              </Button>
-              {isAuthenticated && (
-                <Button
-                  variant={pathname === '/me' ? 'secondary' : 'ghost'}
-                  size="sm"
-                  asChild
-                  className={
-                    pathname === '/me'
-                      ? 'bg-gray-700/50 text-white'
-                      : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
-                  }
-                >
-                  <Link href="/me">Me</Link>
-                </Button>
-              )}
-            </div>
-          </div>
-
           {/* Right: Auth buttons */}
           <div className="flex-shrink-0 flex items-center space-x-3">
             {isAuthenticated ? (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={clearAuth}
-                className="border-gray-600 bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 hover:text-white"
-              >
-                Sign Out
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="relative h-10 w-10 rounded-full p-0 hover:bg-gray-700/50"
+                  >
+                    <Avatar className="h-10 w-10 border-2 border-gray-600">
+                      <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
+                        {getUserInitials(user?.name || user?.email)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  className="w-56 bg-gray-800 border-gray-700"
+                  align="end"
+                  forceMount
+                >
+                  <div className="flex items-center justify-start gap-2 p-2">
+                    <div className="flex flex-col space-y-1 leading-none">
+                      {user?.name && (
+                        <p className="font-medium text-white">{user.name}</p>
+                      )}
+                      {user?.email && (
+                        <p className="w-[200px] truncate text-sm text-gray-400">
+                          {user.email}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <DropdownMenuSeparator className="bg-gray-700" />
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href="/me"
+                      className="flex items-center gap-2 text-gray-300 hover:text-white hover:bg-gray-700/50 cursor-pointer"
+                    >
+                      <User className="h-4 w-4" />
+                      My Snippets
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={clearAuth}
+                    className="flex items-center gap-2 text-gray-300 hover:text-white hover:bg-gray-700/50 cursor-pointer"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <>
                 <Button

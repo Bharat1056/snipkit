@@ -28,9 +28,11 @@ const Dashboard: React.FC = () => {
           <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
             Dashboard
           </h1>
-          <p className="text-gray-400">
-            Welcome back, {user?.username ?? 'User'}!
-          </p>
+          {isAuthenticated && (
+            <p className="text-gray-400">
+              Welcome back, {user?.username ?? 'User'}!
+            </p>
+          )}
         </div>
         {/* Public Code Snippets */}
         <div className="mb-8">
