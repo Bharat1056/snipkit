@@ -8,13 +8,33 @@ import {
   forwardRef,
   useImperativeHandle,
 } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, FileCode, Search } from 'lucide-react';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Loader2, FileCode, Search, X } from 'lucide-react';
 import { useAuth } from '@/hooks/auth.hook';
 import { toast } from 'sonner';
 import { CodeFileCard } from './code-card';
+import { useRouter } from 'next/navigation';
+import LoadingScreen from '@/components/loading-screen';
+
+// Form validation schema
+const searchFormSchema = z.object({
+  search: z.string().min(0).max(100, 'Search term too long'),
+});
+
+type SearchFormValues = z.infer<typeof searchFormSchema>;
 
 interface CodeFile {
   id: string;
@@ -37,12 +57,12 @@ interface CodeFile {
 }
 
 export const MyCodeGallery = forwardRef(function CodeGallery(_, ref) {
-  const { auth, isValidAuth } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
   const [codeFiles, setCodeFiles] = useState<CodeFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
-  const [searchInput, setSearchInput] = useState('');
+  const [activeSearch, setActiveSearch] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
@@ -52,9 +72,34 @@ export const MyCodeGallery = forwardRef(function CodeGallery(_, ref) {
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const PAGE_SIZE = 9;
 
+  // React Hook Form setup
+  const form = useForm<SearchFormValues>({
+    resolver: zodResolver(searchFormSchema),
+    defaultValues: {
+      search: '',
+    },
+  });
+
+  const { handleSubmit, control, reset, watch } = form;
+  const watchedSearch = watch('search');
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push('/sign-in');
+    }
+  }, [isAuthenticated, isLoading, router]);
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
   const fetchCodeFiles = useCallback(
     async (reset = false) => {
-      if (!isValidAuth) return;
+      if (!isAuthenticated) return;
       if (!reset && (loadingMore || !hasMore)) return;
 
       if (reset) {
@@ -66,7 +111,8 @@ export const MyCodeGallery = forwardRef(function CodeGallery(_, ref) {
 
       try {
         let url = `/api/code/list?type=my&page=${reset ? 1 : page}&pageSize=${PAGE_SIZE}`;
-        if (search) url += `&slug=${encodeURIComponent(search)}`;
+        if (activeSearch) url += `&slug=${encodeURIComponent(activeSearch)}`;
+
         const response = await fetch(url);
         if (!response.ok) throw new Error('Failed to fetch code files');
 
@@ -85,6 +131,7 @@ export const MyCodeGallery = forwardRef(function CodeGallery(_, ref) {
       } catch (error) {
         console.error('Error fetching code files:', error);
         setError('Failed to load code files');
+        toast.error('Failed to load code files');
       } finally {
         if (reset) {
           setLoading(false);
@@ -93,14 +140,14 @@ export const MyCodeGallery = forwardRef(function CodeGallery(_, ref) {
         }
       }
     },
-    [isValidAuth, search, page, loadingMore, hasMore]
+    [isAuthenticated, activeSearch, page, loadingMore, hasMore]
   );
 
   useEffect(() => {
-    if (isValidAuth) {
+    if (isAuthenticated) {
       fetchCodeFiles(true);
     }
-  }, [isValidAuth, search]);
+  }, [isAuthenticated, activeSearch]);
 
   useEffect(() => {
     if (loading || loadingMore || !hasMore || !loadMoreRef.current) return;
@@ -115,14 +162,42 @@ export const MyCodeGallery = forwardRef(function CodeGallery(_, ref) {
     return () => observerInstance.disconnect();
   }, [loading, loadingMore, hasMore, fetchCodeFiles]);
 
-  useImperativeHandle(ref, () => ({ refetch: () => fetchCodeFiles(true) }), [
-    fetchCodeFiles,
-  ]);
+  useImperativeHandle(
+    ref,
+    () => ({
+      refetch: () => fetchCodeFiles(true),
+      clearSearch: () => {
+        reset({ search: '' });
+        setActiveSearch('');
+      },
+    }),
+    [fetchCodeFiles, reset]
+  );
+
+  // Form submit handler
+  const onSearchSubmit = (data: SearchFormValues) => {
+    setActiveSearch(data.search);
+  };
+
+  // Clear search handler
+  const handleClearSearch = () => {
+    reset({ search: '' });
+    setActiveSearch('');
+  };
+
+  // Quick search on Enter key
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSubmit(onSearchSubmit)();
+    }
+  };
 
   const handleToggleAccess = async (file: CodeFile) => {
     const originalAccess = file.access;
     const newAccess = originalAccess === 'public' ? 'private' : 'public';
 
+    // Optimistic update
     setCodeFiles(prevFiles =>
       prevFiles.map(f => (f.id === file.id ? { ...f, access: newAccess } : f))
     );
@@ -139,6 +214,7 @@ export const MyCodeGallery = forwardRef(function CodeGallery(_, ref) {
       toast.success(`Snippet is now ${newAccess}`);
     } catch (error) {
       console.error('Error updating access level:', error);
+      // Revert optimistic update
       setCodeFiles(prevFiles =>
         prevFiles.map(f =>
           f.id === file.id ? { ...f, access: originalAccess } : f
@@ -156,64 +232,101 @@ export const MyCodeGallery = forwardRef(function CodeGallery(_, ref) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: file.id }),
       });
+
       if (!res.ok) throw new Error('Failed to delete code');
+
       setCodeFiles(prev => prev.filter(f => f.id !== file.id));
-      toast.success('Code deleted');
-    } catch (e) {
-      console.error('Error deleting code:', e);
-      toast.error('Failed to delete code');
+      toast.success('Code deleted successfully');
+    } catch (error) {
+      console.error('Error deleting code:', error);
+      toast.error('Failed to delete code. Please try again.');
     } finally {
       setDeletingId(null);
       setConfirmDeleteId(null);
     }
   };
 
-  if (!isValidAuth) {
-    return (
-      <Card>
-        <CardContent className="pt-6">
-          <Alert>
-            <AlertDescription>
-              Please sign in to view your code files.
-            </AlertDescription>
-          </Alert>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <div className="space-y-4 max-w-7xl mx-auto">
-      <div className="flex items-center gap-2 mb-4">
-        <div className="relative w-full">
-          <input
-            type="text"
-            placeholder="Search by slug..."
-            className="w-full pl-10 pr-4 py-2 border rounded focus:outline-none focus:ring"
-            value={searchInput}
-            onChange={e => setSearchInput(e.target.value)}
-            onKeyDown={e => {
-              if (e.key === 'Enter') {
-                setSearch(searchInput);
-              }
-            }}
-          />
-          <Search className="absolute left-2 top-2.5 h-5 w-5 text-gray-400" />
-        </div>
-        <Button onClick={() => setSearch(searchInput)} variant="outline">
-          Search
-        </Button>
-        <Button
-          onClick={() => {
-            setSearch('');
-            setSearchInput('');
-          }}
-          variant="ghost"
-        >
-          Clear
-        </Button>
-      </div>
+      {/* Search Form */}
+      <Form {...form}>
+        <form onSubmit={handleSubmit(onSearchSubmit)} className="space-y-4">
+          <div className="flex items-center gap-2 mb-4">
+            <FormField
+              control={control}
+              name="search"
+              render={({ field }) => (
+                <FormItem className="flex-1">
+                  <FormControl>
+                    <div className="relative">
+                      <Input
+                        placeholder="Search by slug..."
+                        {...field}
+                        onKeyDown={handleKeyDown}
+                        className="pr-10"
+                      />
+                      {watchedSearch && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            field.onChange('');
+                            setActiveSearch('');
+                          }}
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              type="submit"
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Search className="h-4 w-4" />
+              Search
+            </Button>
+            {activeSearch && (
+              <Button
+                type="button"
+                onClick={handleClearSearch}
+                variant="ghost"
+                className="flex items-center gap-2"
+              >
+                <X className="h-4 w-4" />
+                Clear
+              </Button>
+            )}
+          </div>
+        </form>
+      </Form>
 
+      {/* Active Search Indicator */}
+      {activeSearch && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Search className="h-4 w-4 text-blue-600" />
+            <span className="text-sm text-blue-700">
+              Searching for: <strong>"{activeSearch}"</strong>
+            </span>
+          </div>
+          <Button
+            onClick={handleClearSearch}
+            variant="ghost"
+            size="sm"
+            className="text-blue-600 hover:text-blue-800"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+
+      {/* Content */}
       {loading ? (
         <Card>
           <CardContent className="pt-6">
@@ -235,10 +348,23 @@ export const MyCodeGallery = forwardRef(function CodeGallery(_, ref) {
           <CardContent className="pt-6">
             <div className="text-center py-8">
               <FileCode className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No code files yet</h3>
+              <h3 className="text-lg font-semibold mb-2">
+                {activeSearch ? 'No matching code files' : 'No code files yet'}
+              </h3>
               <p className="text-muted-foreground">
-                Upload your first code file to get started.
+                {activeSearch
+                  ? `No code files found matching "${activeSearch}". Try a different search term.`
+                  : 'Upload your first code file to get started.'}
               </p>
+              {activeSearch && (
+                <Button
+                  onClick={handleClearSearch}
+                  variant="outline"
+                  className="mt-4"
+                >
+                  Clear Search
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -249,7 +375,7 @@ export const MyCodeGallery = forwardRef(function CodeGallery(_, ref) {
               <CodeFileCard
                 key={file.id}
                 file={file}
-                currentUser={auth?.username ?? null}
+                currentUser={user?.username ?? null}
                 onToggleAccess={() => handleToggleAccess(file)}
                 onDelete={() => handleDelete(file)}
                 deletingId={deletingId}
@@ -258,12 +384,15 @@ export const MyCodeGallery = forwardRef(function CodeGallery(_, ref) {
               />
             ))}
           </div>
+
+          {/* Load More Trigger */}
           <div ref={loadMoreRef} />
+
           {loadingMore && (
             <div className="flex justify-center py-4">
               <Button disabled size="lg" className="flex items-center gap-2">
                 <Loader2 className="h-5 w-5 animate-spin" />
-                Loading...
+                Loading more...
               </Button>
             </div>
           )}

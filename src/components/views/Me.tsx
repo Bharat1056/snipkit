@@ -46,7 +46,6 @@ export default function MePage() {
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent flex items-center gap-3">
-            <User className="w-8 h-8" />
             My Code Snippets
           </h1>
           <p className="text-gray-400">
@@ -79,13 +78,7 @@ export default function MePage() {
         </div>
 
         {/* Code snippets */}
-        <div>
-          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <Code className="w-5 h-5" />
-            Your Code Snippets
-          </h2>
-          <MyCodeGallery ref={galleryRef} />
-        </div>
+        <MyCodeGallery ref={galleryRef} />
       </div>
     </div>
   );
