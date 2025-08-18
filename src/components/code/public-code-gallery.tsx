@@ -1,10 +1,11 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { FileCode } from "lucide-react";
-import { CodeFileCard } from "./code-card"; // ✅ your shared component
+import { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { FileCode } from 'lucide-react';
+import { CodeFileCard } from './code-card'; // ✅ your shared component
+import { apiClient } from '@/axios';
 
 interface CodeFile {
   id: string;
@@ -41,14 +42,14 @@ export function PublicCodeGallery() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`/api/code/list?access=public&page=${page}&pageSize=${PAGE_SIZE}`);
-        if (!res.ok) throw new Error("Failed to fetch public code snippets");
-        const data = await res.json();
-        setCodeFiles(data.data ?? []);
-        setTotal(data.total ?? 0);
+        const data = await apiClient.get(
+          `/api/v1/web/folder/get-public-code?pageIndex=${page}&pageSize=${PAGE_SIZE}`
+        );
+        setCodeFiles(data?.data?.codes ?? []);
+        setTotal(data?.data?.total ?? 0);
       } catch (e) {
-        console.error("Error fetching public code snippets:", e);
-        setError("Failed to load public code snippets");
+        console.error('Error fetching public code snippets:', e);
+        setError('Failed to load public code snippets');
       } finally {
         setLoading(false);
       }
@@ -58,7 +59,9 @@ export function PublicCodeGallery() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold tracking-tight">Public Code Snippets</h2>
+      <h2 className="text-xl font-semibold tracking-tight">
+        Public Code Snippets
+      </h2>
 
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -82,7 +85,9 @@ export function PublicCodeGallery() {
         </div>
       ) : error ? (
         <Card>
-          <CardContent className="py-10 text-center text-destructive font-medium">{error}</CardContent>
+          <CardContent className="py-10 text-center text-destructive font-medium">
+            {error}
+          </CardContent>
         </Card>
       ) : codeFiles.length === 0 ? (
         <Card>
@@ -97,7 +102,7 @@ export function PublicCodeGallery() {
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {codeFiles.map((file) => (
+            {codeFiles.map(file => (
               <CodeFileCard
                 key={file.id}
                 file={file}
@@ -118,16 +123,16 @@ export function PublicCodeGallery() {
               size="sm"
               className="rounded-full"
               disabled={page === 1}
-              onClick={() => setPage((p) => p - 1)}
+              onClick={() => setPage(p => p - 1)}
             >
               Previous
             </Button>
             {Array.from({ length: totalPages }, (_, i) => (
               <Button
                 key={i}
-                variant={page === i + 1 ? "default" : "outline"}
+                variant={page === i + 1 ? 'default' : 'outline'}
                 size="sm"
-                className={`rounded-full ${page === i + 1 ? "font-semibold" : ""}`}
+                className={`rounded-full ${page === i + 1 ? 'font-semibold' : ''}`}
                 onClick={() => setPage(i + 1)}
               >
                 {i + 1}
@@ -138,7 +143,7 @@ export function PublicCodeGallery() {
               size="sm"
               className="rounded-full"
               disabled={page === totalPages || totalPages === 0}
-              onClick={() => setPage((p) => p + 1)}
+              onClick={() => setPage(p => p + 1)}
             >
               Next
             </Button>
