@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   Card,
@@ -6,10 +6,10 @@ import {
   CardContent,
   CardFooter,
   CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
+} from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -20,13 +20,13 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
   AlertDialogAction,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from '@/components/ui/tooltip';
 import {
   Eye,
   FileCode,
@@ -38,10 +38,10 @@ import {
   Unlock,
   Clock,
   Files,
-} from "lucide-react";
-import Link from "next/link";
-import { toast } from "sonner";
-import { Label } from "@/components/ui/label";
+} from 'lucide-react';
+import Link from 'next/link';
+import { toast } from 'sonner';
+import { Label } from '@/components/ui/label';
 
 export interface CodeCardProps {
   file: CodeFile;
@@ -83,14 +83,15 @@ export function CodeFileCard({
   setConfirmDeleteId,
 }: CodeCardProps) {
   const formatDate = (d: string) =>
-    new Date(d).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
+    new Date(d).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
     });
 
-  const isOwner = file.author.username === currentUser;
-  const isPublic = file.access === "public";
+  console.log(file);
+  const isOwner = file?.author?.username === currentUser;
+  const isPublic = file.access === 'public';
 
   return (
     <TooltipProvider delayDuration={100}>
@@ -99,15 +100,18 @@ export function CodeFileCard({
           {/* Header with Title and Access Toggle */}
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
-              <CardTitle className="text-lg font-bold text-white leading-tight truncate mb-2" title={file.title}>
+              <CardTitle
+                className="text-lg font-bold text-white leading-tight truncate mb-2"
+                title={file.title}
+              >
                 {file.title}
               </CardTitle>
-              
+
               {/* Author and Date Info */}
               <div className="flex items-center gap-3 text-sm text-gray-400">
                 <div className="flex items-center gap-1.5">
                   <User className="h-4 w-4 text-blue-400" />
-                  <span className="font-medium">{file.author.username}</span>
+                  <span className="font-medium">{file?.author?.username}</span>
                 </div>
                 <div className="w-1 h-1 bg-gray-500 rounded-full"></div>
                 <div className="flex items-center gap-1.5">
@@ -143,12 +147,12 @@ export function CodeFileCard({
                 </TooltipContent>
               </Tooltip>
             ) : (
-              <Badge 
-                variant="outline" 
+              <Badge
+                variant="outline"
                 className={`${
-                  isPublic 
-                    ? "border-green-500/50 bg-green-500/10 text-green-400" 
-                    : "border-orange-500/50 bg-orange-500/10 text-orange-400"
+                  isPublic
+                    ? 'border-green-500/50 bg-green-500/10 text-green-400'
+                    : 'border-orange-500/50 bg-orange-500/10 text-orange-400'
                 } backdrop-blur-sm`}
               >
                 {isPublic ? (
@@ -175,17 +179,23 @@ export function CodeFileCard({
             <div className="flex items-center gap-2">
               <Files className="h-4 w-4 text-purple-400" />
               <span className="text-sm font-medium text-gray-300">
-                Files ({file.files.length})
+                Files ({file?.files?.length})
               </span>
             </div>
-            
+
             <div className="rounded-lg border border-gray-600/30 bg-gray-900/50 backdrop-blur-sm p-3">
               <div className="max-h-24 space-y-2 overflow-y-auto scrollbar-hidden">
-                {file.files.map((f) => (
-                  <div key={f.id} className="flex items-center gap-2 text-sm group/file">
+                {file?.files?.map(f => (
+                  <div
+                    key={f?.id}
+                    className="flex items-center gap-2 text-sm group/file"
+                  >
                     <FileText className="h-3.5 w-3.5 flex-shrink-0 text-blue-400" />
-                    <span className="truncate text-gray-300 group-hover/file:text-white transition-colors" title={f.name}>
-                      {f.name}
+                    <span
+                      className="truncate text-gray-300 group-hover/file:text-white transition-colors"
+                      title={f?.name}
+                    >
+                      {f?.name}
                     </span>
                   </div>
                 ))}
@@ -198,9 +208,9 @@ export function CodeFileCard({
           <div className="flex items-center justify-between w-full">
             {/* Delete Button for Owner */}
             {isOwner && (
-              <AlertDialog 
-                open={confirmDeleteId === file.id} 
-                onOpenChange={(open) => setConfirmDeleteId(open ? file.id : null)}
+              <AlertDialog
+                open={confirmDeleteId === file.id}
+                onOpenChange={open => setConfirmDeleteId(open ? file.id : null)}
               >
                 <AlertDialogTrigger asChild>
                   <Button
@@ -219,16 +229,19 @@ export function CodeFileCard({
                 </AlertDialogTrigger>
                 <AlertDialogContent className="border-gray-600/50 bg-gray-800/90 backdrop-blur-sm">
                   <AlertDialogHeader>
-                    <AlertDialogTitle className="text-white">Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogTitle className="text-white">
+                      Are you absolutely sure?
+                    </AlertDialogTitle>
                     <AlertDialogDescription className="text-gray-400">
-                      This action cannot be undone. This will permanently delete &quot;{file.title}&quot; and all its files.
+                      This action cannot be undone. This will permanently delete
+                      &quot;{file.title}&quot; and all its files.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel className="border-gray-600 bg-gray-700/50 text-gray-300 hover:bg-gray-600/50">
                       Cancel
                     </AlertDialogCancel>
-                    <AlertDialogAction 
+                    <AlertDialogAction
                       onClick={() => onDelete(file)}
                       className="bg-red-600 hover:bg-red-700 text-white"
                     >
@@ -243,15 +256,15 @@ export function CodeFileCard({
             <div className="flex items-center gap-2">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button 
-                    asChild 
-                    size="sm" 
+                  <Button
+                    asChild
+                    size="sm"
                     variant="ghost"
                     className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
                   >
                     <Link
-                      href={`/code/${file.author.username}/${file.slug}`}
-                      aria-label={`View ${file.title}`}
+                      href={`/code/${file?.author?.username}/${file?.slug}`}
+                      aria-label={`View ${file?.title}`}
                     >
                       <Eye className="h-4 w-4" />
                       <span className="ml-2 hidden sm:inline">View</span>
@@ -262,7 +275,7 @@ export function CodeFileCard({
                   <p>View Code Snippet</p>
                 </TooltipContent>
               </Tooltip>
-              
+
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
@@ -271,7 +284,7 @@ export function CodeFileCard({
                     onClick={() => {
                       const command = `npx snipkit @${file.author.username}/${file.slug}`;
                       navigator.clipboard.writeText(command);
-                      toast.success("CLI command copied!", {
+                      toast.success('CLI command copied!', {
                         description: `Copied: ${command}`,
                       });
                     }}
