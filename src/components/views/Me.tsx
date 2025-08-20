@@ -51,7 +51,7 @@ export default function MePage() {
               className="p-0 w-full max-w-[95vw] md:max-w-xl max-h-[90vh] rounded-2xl shadow-xl bg-background overflow-y-auto scrollbar-none"
               style={{ border: 'none', WebkitOverflowScrolling: 'touch' }}
             >
-              <div className="w-full flex flex-col items-center justify-center p-6">
+              <div className="w-full flex flex-col items-center justify-center">
                 <CodeUpload onUploadComplete={handleUploadComplete} />
               </div>
             </DialogContent>

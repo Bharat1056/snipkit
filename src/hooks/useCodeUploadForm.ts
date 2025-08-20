@@ -3,6 +3,7 @@ import axios, { AxiosProgressEvent } from 'axios';
 import { generateSlug, getContentType } from '@/lib/utils';
 import { toast } from 'sonner';
 import { filterIgnoredFiles, getIgnoreSummary } from '@/lib/file-ignore';
+import { apiClient } from '@/axios';
 
 interface UseCodeUploadFormProps {
   onUploadComplete?: () => void;
@@ -128,13 +129,12 @@ export function useCodeUploadForm({
         contentType: getContentType(file.name),
         size: file.size,
       }));
-
       // API Response (Upload URLs)
-      const response = await axios.post('/api/code', {
+      const response = await apiClient.post('/api/v1/web/file/upload', {
         ...formData,
         files: filesToUpload,
       });
-
+      console.log('Upload URLs response:', response);
       const { filesWithUrls } = response.data;
 
       const uploadPromises = filesWithUrls.map(
@@ -144,7 +144,7 @@ export function useCodeUploadForm({
           );
           if (!file) return;
 
-          await axios.put(uploadUrl, file, {
+          await apiClient.put(uploadUrl, file, {
             headers: {
               'Content-Type': getContentType(file.name),
               'Cache-Control': 'no-cache',
