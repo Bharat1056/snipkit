@@ -3,7 +3,7 @@ import { minimatch } from 'minimatch';
 import {
   CUSTOM_IGNORE_FILENAME,
   DEFAULT_IGNORE_PATTERNS,
-} from '@/constants/file-ignore.constant';
+} from '@/constants/file.constant';
 
 /**
  * Parse ignore patterns from .snipkitignore file content

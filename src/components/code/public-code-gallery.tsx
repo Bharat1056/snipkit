@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { FileCode } from 'lucide-react';
 import { CodeFileCard } from './code-card'; // ✅ your shared component
 import { apiClient } from '@/axios';
+import { CardLoadingGrid } from '@/components/common/card-loading';
 
 interface CodeFile {
   id: string;
@@ -64,25 +65,7 @@ export function PublicCodeGallery() {
       </h2>
 
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Card key={i} className="rounded-xl p-4 space-y-3">
-              <div className="space-y-2">
-                <div className="h-4 w-3/4 bg-muted rounded animate-pulse" />
-                <div className="h-3 w-full bg-muted rounded animate-pulse" />
-                <div className="flex items-center gap-3 pt-2">
-                  <div className="h-4 w-10 bg-muted rounded animate-pulse" />
-                  <div className="h-4 w-16 bg-muted rounded animate-pulse" />
-                  <div className="h-4 w-16 bg-muted rounded animate-pulse" />
-                </div>
-                <div className="flex gap-2 pt-2">
-                  <div className="h-8 w-8 bg-muted rounded-full animate-pulse" />
-                  <div className="h-8 w-8 bg-muted rounded-full animate-pulse" />
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
+        <CardLoadingGrid rows={2} cols={3} />
       ) : error ? (
         <Card>
           <CardContent className="py-10 text-center text-destructive font-medium">
