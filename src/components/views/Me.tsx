@@ -1,38 +1,19 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useRef } from 'react';
 import { CodeUpload } from '@/components/code/code-upload';
 import { MyCodeGallery } from '@/components/code/my-code-gallery';
 import { Dialog, DialogTrigger, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Upload, Code, User } from 'lucide-react';
-import LoadingScreen from '@/components/loading-screen';
-import { useAuth } from '@/hooks/auth.hook';
+import { Upload } from 'lucide-react';
 
 interface CodeGalleryRef {
   refetch: () => void;
 }
 
 export default function MePage() {
-  const { isLoading, isAuthenticated } = useAuth();
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const galleryRef = useRef<CodeGalleryRef>(null);
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/sign-in');
-    }
-  }, [isAuthenticated, isLoading, router]);
-
-  if (isLoading) {
-    return <LoadingScreen />;
-  }
-
-  if (!isAuthenticated) {
-    return null;
-  }
 
   const handleUploadComplete = () => {
     setOpen(false);

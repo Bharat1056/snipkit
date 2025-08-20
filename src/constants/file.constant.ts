@@ -35,3 +35,4 @@ export const DEFAULT_IGNORE_PATTERNS = [
   '*.swp',
   '*.iml',
 ];
+export const DEFAULT_PAGE_SIZE = 9;
