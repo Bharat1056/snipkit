@@ -124,7 +124,7 @@ export function useCodeUploadForm({
 
     try {
       const filesToUpload = selectedFiles.map(file => ({
-        name: file.name.split(' ').join('-'), // sanitize file name
+        name: file.name,
         path: (file as any).webkitRelativePath || file.name, // eslint-disable-line @typescript-eslint/no-explicit-any
         contentType: getContentType(file.name),
         size: file.size,
@@ -134,9 +134,7 @@ export function useCodeUploadForm({
         ...formData,
         files: filesToUpload,
       });
-      console.log('Upload URLs response:', response);
-      const { filesWithUrls } = response.data;
-
+      const filesWithUrls = response.code.urls;
       const uploadPromises = filesWithUrls.map(
         async ({ path, uploadUrl }: { path: string; uploadUrl: string }) => {
           const file = selectedFiles.find(

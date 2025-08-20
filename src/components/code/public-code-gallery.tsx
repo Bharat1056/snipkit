@@ -46,8 +46,8 @@ export function PublicCodeGallery() {
         const data = await apiClient.get(
           `/api/v1/web/folder/get-public-code?pageIndex=${page}&pageSize=${PAGE_SIZE}`
         );
-        setCodeFiles(data?.data?.codes ?? []);
-        setTotal(data?.data?.total ?? 0);
+        setCodeFiles(data?.codes ?? []);
+        setTotal(data?.total ?? 0);
       } catch (e) {
         console.error('Error fetching public code snippets:', e);
         setError('Failed to load public code snippets');
