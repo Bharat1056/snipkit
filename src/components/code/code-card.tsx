@@ -1,12 +1,6 @@
 'use client';
 
-import {
-  Card,
-  CardHeader,
-  CardContent,
-  CardFooter,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardHeader, CardFooter, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -27,123 +21,91 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import {
-  Eye,
-  FileCode,
-  FileText,
-  Loader2,
-  Trash2,
-  User,
-  Lock,
-  Unlock,
-  Clock,
-  Files,
-} from 'lucide-react';
+import { Eye, FileCode, Trash2, User, Lock, Unlock, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { Label } from '@/components/ui/label';
 
 export interface CodeCardProps {
   file: CodeFile;
-  currentUser: string | null;
   onToggleAccess: (file: CodeFile) => void;
   onDelete: (file: CodeFile) => void;
-  deletingId: string | null;
-  confirmDeleteId: string | null;
-  setConfirmDeleteId: (id: string | null) => void;
+  isOwner?: boolean;
 }
 
 interface CodeFile {
-  id: string;
   title: string;
   description?: string;
   slug: string;
   access: string;
   createdAt: string;
-  author: {
+  command: string;
+  owner: {
     username: string;
+    fullName: string;
+    email: string;
+    role: string;
   };
-  downloadUrl?: string;
-  files: {
-    id: string;
-    name: string;
-    key: string;
-    signedUrl: string | null;
-    size: number;
-  }[];
+  viewLink: string;
 }
 
 export function CodeFileCard({
   file,
-  currentUser,
   onToggleAccess,
   onDelete,
-  deletingId,
-  confirmDeleteId,
-  setConfirmDeleteId,
+  isOwner = false,
 }: CodeCardProps) {
-  const formatDate = (d: string) =>
-    new Date(d).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-
-  console.log(file);
-  const isOwner = file?.author?.username === currentUser;
   const isPublic = file.access === 'public';
 
   return (
     <TooltipProvider delayDuration={100}>
-      <Card className="group h-full transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl border-gray-600/30 bg-gray-800/60 backdrop-blur-md">
-        <CardHeader className="space-y-4 pb-4">
-          {/* Header with Title and Access Toggle */}
+      <Card className="group h-full border border-gray-700/40 bg-gray-800/70 backdrop-blur-md rounded-xl shadow-sm hover:shadow-lg hover:border-gray-600/60 transition-all duration-200">
+        <CardHeader className="pb-3">
           <div className="flex items-start justify-between gap-3">
+            {/* Title + Meta */}
             <div className="flex-1 min-w-0">
               <CardTitle
-                className="text-lg font-bold text-white leading-tight truncate mb-2"
+                className="text-base font-semibold text-white truncate"
                 title={file.title}
               >
                 {file.title}
               </CardTitle>
-
-              {/* Author and Date Info */}
-              <div className="flex items-center gap-3 text-sm text-gray-400">
+              <div className="mt-1 flex justify-start md:items-center gap-3 text-xs text-gray-400 flex-col md:flex-row">
                 <div className="flex items-center gap-1.5">
-                  <User className="h-4 w-4 text-blue-400" />
-                  <span className="font-medium">{file?.author?.username}</span>
+                  <User className="h-3.5 w-3.5 text-blue-400" />
+                  <span>{file?.owner?.username}</span>
                 </div>
-                <div className="w-1 h-1 bg-gray-500 rounded-full"></div>
+                <span className="w-1 h-1 bg-gray-500 rounded-full hidden md:block" />
                 <div className="flex items-center gap-1.5">
-                  <Clock className="h-4 w-4 text-green-400" />
-                  <span>{formatDate(file.createdAt)}</span>
+                  <Clock className="h-3.5 w-3.5 text-green-400" />
+                  <span>{file.createdAt}</span>
                 </div>
               </div>
             </div>
 
-            {/* Access Control */}
+            {/* Access */}
             {isOwner ? (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div
-                    className="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-600/50 bg-gray-700/50 backdrop-blur-sm py-2 px-3 transition-all hover:bg-gray-600/50"
+                    className="flex cursor-pointer items-center gap-2 rounded-md border border-gray-600/50 bg-gray-700/40 px-2.5 py-1.5 transition-all hover:bg-gray-600/40"
                     onClick={() => onToggleAccess(file)}
                   >
                     <Switch
-                      id={`access-toggle-${file.id}`}
+                      id={`access-toggle-${file.slug}`}
                       checked={isPublic}
                       className="data-[state=checked]:bg-green-500"
                     />
                     <Label
-                      htmlFor={`access-toggle-${file.id}`}
-                      className="cursor-pointer select-none text-sm font-medium text-white capitalize"
+                      htmlFor={`access-toggle-${file.slug}`}
+                      className="text-xs text-white capitalize"
                     >
                       {file.access}
                     </Label>
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Toggle Public/Private Access</p>
+                  <p>Toggle Public/Private</p>
                 </TooltipContent>
               </Tooltip>
             ) : (
@@ -153,153 +115,107 @@ export function CodeFileCard({
                   isPublic
                     ? 'border-green-500/50 bg-green-500/10 text-green-400'
                     : 'border-orange-500/50 bg-orange-500/10 text-orange-400'
-                } backdrop-blur-sm`}
+                } text-xs`}
               >
                 {isPublic ? (
-                  <Unlock className="mr-1.5 h-3 w-3" />
+                  <Unlock className="mr-1 h-3 w-3" />
                 ) : (
-                  <Lock className="mr-1.5 h-3 w-3" />
+                  <Lock className="mr-1 h-3 w-3" />
                 )}
                 {file.access}
               </Badge>
             )}
           </div>
 
-          {/* Description if available */}
           {file.description && (
-            <p className="text-sm text-gray-300 line-clamp-2 leading-relaxed">
+            <p className="mt-2 text-sm text-gray-300 line-clamp-2 leading-snug">
               {file.description}
             </p>
           )}
         </CardHeader>
 
-        <CardContent className="pb-4">
-          {/* Files Section */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <Files className="h-4 w-4 text-purple-400" />
-              <span className="text-sm font-medium text-gray-300">
-                Files ({file?.files?.length})
-              </span>
-            </div>
-
-            <div className="rounded-lg border border-gray-600/30 bg-gray-900/50 backdrop-blur-sm p-3">
-              <div className="max-h-24 space-y-2 overflow-y-auto scrollbar-hidden">
-                {file?.files?.map(f => (
-                  <div
-                    key={f?.id}
-                    className="flex items-center gap-2 text-sm group/file"
+        <CardFooter className="flex justify-between border-t border-gray-700/40 bg-gray-800/50 pt-3">
+          {/* Delete (Owner only) */}
+          {isOwner && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span className="ml-1.5 hidden sm:inline">Delete</span>
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="border border-gray-700 bg-gray-800/90 backdrop-blur-md">
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="text-white">
+                    Delete “{file.title}”?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription className="text-gray-400">
+                    This action cannot be undone. It will permanently remove
+                    this snippet and its files.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="border-gray-600 bg-gray-700 text-gray-300 hover:bg-gray-600">
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => onDelete(file)}
+                    className="bg-red-600 hover:bg-red-700 text-white"
                   >
-                    <FileText className="h-3.5 w-3.5 flex-shrink-0 text-blue-400" />
-                    <span
-                      className="truncate text-gray-300 group-hover/file:text-white transition-colors"
-                      title={f?.name}
-                    >
-                      {f?.name}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </CardContent>
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
 
-        <CardFooter className="border-t border-gray-600/30 bg-gray-800/30 backdrop-blur-sm pt-4">
-          <div className="flex items-center justify-between w-full">
-            {/* Delete Button for Owner */}
-            {isOwner && (
-              <AlertDialog
-                open={confirmDeleteId === file.id}
-                onOpenChange={open => setConfirmDeleteId(open ? file.id : null)}
-              >
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                    disabled={deletingId === file.id}
-                  >
-                    {deletingId === file.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="h-4 w-4" />
-                    )}
-                    <span className="ml-2 hidden sm:inline">Delete</span>
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent className="border-gray-600/50 bg-gray-800/90 backdrop-blur-sm">
-                  <AlertDialogHeader>
-                    <AlertDialogTitle className="text-white">
-                      Are you absolutely sure?
-                    </AlertDialogTitle>
-                    <AlertDialogDescription className="text-gray-400">
-                      This action cannot be undone. This will permanently delete
-                      &quot;{file.title}&quot; and all its files.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel className="border-gray-600 bg-gray-700/50 text-gray-300 hover:bg-gray-600/50">
-                      Cancel
-                    </AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={() => onDelete(file)}
-                      className="bg-red-600 hover:bg-red-700 text-white"
-                    >
-                      Delete
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
+          {/* Actions */}
+          <div className="flex items-center gap-1.5">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  asChild
+                  size="sm"
+                  variant="ghost"
+                  className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                >
+                  <Link href={file.viewLink} aria-label={`View ${file.title}`}>
+                    <Eye className="h-4 w-4" />
+                    <span className="ml-1 hidden sm:inline">View</span>
+                  </Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>View Code</p>
+              </TooltipContent>
+            </Tooltip>
 
-            {/* Action Buttons */}
-            <div className="flex items-center gap-2">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    asChild
-                    size="sm"
-                    variant="ghost"
-                    className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
-                  >
-                    <Link
-                      href={`/code/${file?.author?.username}/${file?.slug}`}
-                      aria-label={`View ${file?.title}`}
-                    >
-                      <Eye className="h-4 w-4" />
-                      <span className="ml-2 hidden sm:inline">View</span>
-                    </Link>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>View Code Snippet</p>
-                </TooltipContent>
-              </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => {
-                      const command = `npx snipkit @${file.author.username}/${file.slug}`;
-                      navigator.clipboard.writeText(command);
-                      toast.success('CLI command copied!', {
-                        description: `Copied: ${command}`,
-                      });
-                    }}
-                    className="text-green-400 hover:text-green-300 hover:bg-green-500/10"
-                    aria-label="Copy CLI command"
-                  >
-                    <FileCode className="h-4 w-4" />
-                    <span className="ml-2 hidden sm:inline">CLI</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Copy CLI Command</p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    navigator.clipboard.writeText(file.command);
+                    toast.success('CLI command copied!', {
+                      description: `Copied: ${file.command}`,
+                    });
+                  }}
+                  className="text-green-400 hover:text-green-300 hover:bg-green-500/10"
+                  aria-label="Copy CLI command"
+                >
+                  <FileCode className="h-4 w-4" />
+                  <span className="ml-1 hidden sm:inline">CLI</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Copy CLI Command</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
         </CardFooter>
       </Card>
