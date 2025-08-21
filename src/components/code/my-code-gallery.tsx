@@ -4,28 +4,24 @@ import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { FileCode } from 'lucide-react';
-import { CodeFileCard } from './code-card'; // ✅ shared component
+import { CodeFileCard } from './code-card';
 import { apiClient } from '@/axios';
 import { CardLoadingGrid } from '@/components/common/card-loading';
 
 interface CodeFile {
-  id: string;
   title: string;
   description?: string;
   slug: string;
   access: string;
   createdAt: string;
-  author: {
+  command: string;
+  owner: {
     username: string;
+    fullName: string;
+    email: string;
+    role: string;
   };
-  downloadUrl?: string;
-  files: {
-    id: string;
-    name: string;
-    key: string;
-    signedUrl: string | null;
-    size: number;
-  }[];
+  viewLink: string;
 }
 
 export interface MyCodeGalleryRef {
@@ -42,28 +38,27 @@ const MyCodeGallery = forwardRef<MyCodeGalleryRef>((_, ref) => {
   const PAGE_SIZE = 9;
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
-  const fetchData = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await apiClient.get(
-        `/api/v1/web/folder/get-mine-code?pageIndex=${page}&pageSize=${PAGE_SIZE}`
-      );
-      setCodeFiles(data?.data?.codes ?? []);
-      setTotal(data?.data?.total ?? 0);
-    } catch (e) {
-      console.error('Error fetching public code snippets:', e);
-      setError('Failed to load public code snippets');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useImperativeHandle(ref, () => ({
     refetch: fetchData,
   }));
 
   useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await apiClient.get(
+          `/api/v1/web/folder/get-mine-code?pageIndex=${page}&pageSize=${PAGE_SIZE}`
+        );
+        setCodeFiles(data?.codes ?? []);
+        setTotal(data?.total ?? 0);
+      } catch (e) {
+        console.error('Error fetching public code snippets:', e);
+        setError('Failed to load public code snippets');
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchData();
   }, [page]);
 
@@ -100,14 +95,11 @@ const MyCodeGallery = forwardRef<MyCodeGalleryRef>((_, ref) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {codeFiles.map(file => (
           <CodeFileCard
-            key={file.id}
+            key={file.slug}
             file={file}
-            currentUser={null}
             onToggleAccess={() => {}}
             onDelete={() => {}}
-            deletingId={null}
-            confirmDeleteId={null}
-            setConfirmDeleteId={() => {}}
+            isOwner={true}
           />
         ))}
       </div>
