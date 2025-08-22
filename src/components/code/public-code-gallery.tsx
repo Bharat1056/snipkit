@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { FileCode } from 'lucide-react';
-import { CodeFileCard } from './code-card'; // ✅ your shared component
+import { CodeFileCard } from './code-card';
 import { apiClient } from '@/axios';
 import { CardLoadingGrid } from '@/components/common/card-loading';
-
+import { DEFAULT_PAGE_SIZE, TAB_REFETCH_TIME } from '@/constants/file.constant';
 interface CodeFile {
   title: string;
   description?: string;
@@ -31,28 +31,46 @@ export function PublicCodeGallery() {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
 
-  const PAGE_SIZE = 9;
-  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const lastFetchedAt = useRef<number>(0);
+
+  const totalPages = Math.ceil(total / DEFAULT_PAGE_SIZE);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await apiClient.get(
+        `/api/v1/web/folder/get-public-code?pageIndex=${page}&pageSize=${DEFAULT_PAGE_SIZE}`
+      );
+      setCodeFiles(data?.codes ?? []);
+      setTotal(data?.total ?? 0);
+      lastFetchedAt.current = Date.now();
+    } catch (e) {
+      console.error('Error fetching public code snippets:', e);
+      setError('Failed to load public code snippets');
+    } finally {
+      setLoading(false);
+    }
+  }, [page]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await apiClient.get(
-          `/api/v1/web/folder/get-public-code?pageIndex=${page}&pageSize=${PAGE_SIZE}`
-        );
-        setCodeFiles(data?.codes ?? []);
-        setTotal(data?.total ?? 0);
-      } catch (e) {
-        console.error('Error fetching public code snippets:', e);
-        setError('Failed to load public code snippets');
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchData();
   }, [page]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (
+        document.visibilityState === 'visible' &&
+        Date.now() - lastFetchedAt.current > TAB_REFETCH_TIME
+      ) {
+        fetchData();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () =>
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
 
   if (loading) {
     return <CardLoadingGrid rows={2} cols={3} />;

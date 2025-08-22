@@ -36,3 +36,4 @@ export const DEFAULT_IGNORE_PATTERNS = [
   '*.iml',
 ];
 export const DEFAULT_PAGE_SIZE = 9;
+export const TAB_REFETCH_TIME = 5 * 60 * 1000;
