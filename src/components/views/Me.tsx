@@ -1,25 +1,17 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { CodeUpload } from '@/components/code/code-upload';
 import { MyCodeGallery } from '@/components/code/my-code-gallery';
 import { Dialog, DialogTrigger, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Upload } from 'lucide-react';
 
-interface CodeGalleryRef {
-  refetch: () => void;
-}
-
 export default function MePage() {
   const [open, setOpen] = useState(false);
-  const galleryRef = useRef<CodeGalleryRef>(null);
 
   const handleUploadComplete = () => {
     setOpen(false);
-    if (galleryRef.current) {
-      galleryRef.current.refetch();
-    }
   };
 
   return (
@@ -59,7 +51,7 @@ export default function MePage() {
         </div>
 
         {/* Code snippets */}
-        <MyCodeGallery ref={galleryRef} />
+        <MyCodeGallery />
       </div>
     </div>
   );
