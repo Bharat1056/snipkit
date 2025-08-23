@@ -1,45 +1,8 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import Image from "next/image";
-import step1 from "../assets/step1.png";
-import step2 from "../assets/step2.png";
-import step3 from "../assets/step3.png";
-import step4 from "../assets/step4.png";
-import step5 from "../assets/step5.png";
-
-const steps = [
-  {
-    title: "Go to your Dashboard",
-    desc: "Access all your tools and overview from your main dashboard after logging in.",
-    img: step1,
-    arrow: null, // add custom SVG or overlay if needed
-  },
-  {
-    title: "View & Use Public Code",
-    desc: "Browse available public snippets and instantly use them via the command line.",
-    img: step2,
-    arrow: null,
-  },
-  {
-    title: "Sign Up to Save Your Own Code",
-    desc: "Click on ‘Sign Up’ to create an account and start managing your own snippets.",
-    img: step3,
-    arrow: null,
-  },
-  {
-    title: "Upload or Paste Your Code",
-    desc: "Choose to upload your code file directly or copy-paste it in our editor.",
-    img: step4,
-    arrow: null,
-  },
-  {
-    title: "Manage & Reuse Effortlessly",
-    desc: "Organize, share, and reuse your code anytime—right from your dashboard or terminal.",
-    img: step5,
-    arrow: null,
-  },
-];
+import { useState } from 'react';
+import Image from 'next/image';
+import { steps } from '../constants/landing.constant';
 
 export default function LandingPageWalkthrough() {
   const [step, setStep] = useState(0);
@@ -52,7 +15,9 @@ export default function LandingPageWalkthrough() {
           <span
             key={idx}
             className={`h-3 w-3 rounded-full transition-all duration-200 ease-in-out ${
-              idx === step ? "bg-gradient-to-r from-blue-500 to-purple-600 scale-110" : "bg-gray-600"
+              idx === step
+                ? 'bg-gradient-to-r from-blue-500 to-purple-600 scale-110'
+                : 'bg-gray-600'
             }`}
           />
         ))}
@@ -64,7 +29,7 @@ export default function LandingPageWalkthrough() {
             src={steps[step].img}
             alt={`Step ${step + 1}`}
             className="w-full h-64 object-contain rounded-lg border border-gray-700 shadow-md bg-gray-800"
-            style={{ background: "#1f2937" }}
+            style={{ background: '#1f2937' }}
             layout="fill"
           />
           {/* Optional: animated arrow overlay can go here */}
@@ -80,14 +45,14 @@ export default function LandingPageWalkthrough() {
         <div className="flex gap-4">
           <button
             className="px-4 py-2 rounded-lg bg-zinc-800 text-white disabled:opacity-50 transition-colors"
-            onClick={() => setStep((s) => s - 1)}
+            onClick={() => setStep(s => s - 1)}
             disabled={step === 0}
           >
             Back
           </button>
           <button
             className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white transition-colors"
-            onClick={() => setStep((s) => Math.min(s + 1, steps.length - 1))}
+            onClick={() => setStep(s => Math.min(s + 1, steps.length - 1))}
             disabled={step === steps.length - 1}
           >
             Next
