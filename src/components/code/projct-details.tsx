@@ -21,36 +21,17 @@ import {
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { toast } from 'sonner';
-
-interface File {
-  id: string;
-  name: string;
-  key: string;
-  size: string;
-  path: string;
-}
+import { CodeFile } from '@/app/code/[username]/[codename]/page';
+import { Folder, Author } from '@/app/code/[username]/[codename]/page';
 
 interface ProjectDetailProps {
-  username: string;
-  slug: string;
-  description: string;
-  title: string;
-  downloadPath: string;
-  access: string;
-  files: File[];
+  folder: Folder;
+  author: Author;
+  files: CodeFile[];
 }
 
-export function ProjectDetail({
-  username,
-  slug,
-  description,
-  title,
-  downloadPath,
-  access,
-  files,
-}: ProjectDetailProps) {
-  const isPublic = access === 'public';
-
+export function ProjectDetail({ author, folder, files }: ProjectDetailProps) {
+  const isPublic = folder?.access === 'public';
   return (
     <div className="max-w-6xl mx-auto py-10 px-4">
       {/* Project Info Header */}
@@ -59,13 +40,11 @@ export function ProjectDetail({
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
               <CardTitle className="text-3xl font-bold text-white mb-2 leading-tight">
-                {title}
+                {folder.title}
               </CardTitle>
-              {description && (
-                <CardDescription className="text-lg text-gray-300">
-                  {description}
-                </CardDescription>
-              )}
+              <CardDescription className="text-lg text-gray-300">
+                {folder.description}
+              </CardDescription>
             </div>
             <Badge
               variant="outline"
@@ -80,7 +59,6 @@ export function ProjectDetail({
               ) : (
                 <Lock className="mr-2 h-4 w-4" />
               )}
-              {access.charAt(0).toUpperCase() + access.slice(1)}
             </Badge>
           </div>
         </CardHeader>
@@ -91,7 +69,9 @@ export function ProjectDetail({
               <User className="h-5 w-5 text-blue-400 flex-shrink-0" />
               <div>
                 <span className="text-gray-400 block">Author</span>
-                <span className="text-white font-medium">{username}</span>
+                <span className="text-white font-medium">
+                  {author.username}
+                </span>
               </div>
             </div>
 
@@ -100,7 +80,7 @@ export function ProjectDetail({
               <div className="min-w-0 flex-1">
                 <span className="text-gray-400 block">Download Path</span>
                 <code className="text-white font-mono text-xs break-all bg-gray-800 px-2 py-1 rounded">
-                  {downloadPath === '' ? '/' : downloadPath}
+                  {folder.downloadPath}
                 </code>
               </div>
             </div>
@@ -133,7 +113,7 @@ export function ProjectDetail({
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {files.map(file => (
               <Card
-                key={file.id}
+                key={file.key}
                 className="group h-full transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl border-gray-600/30 bg-gray-800/60 backdrop-blur-md"
               >
                 <CardHeader className="pb-3">
@@ -160,7 +140,7 @@ export function ProjectDetail({
                         Path:
                       </span>
                       <code className="text-xs text-white font-mono break-all">
-                        {`${downloadPath}${file.path === '.' ? `${title}` : `${file.path}`}`}
+                        {`${file.path}`}
                       </code>
                     </div>
                   </div>
@@ -172,10 +152,9 @@ export function ProjectDetail({
                       variant="ghost"
                       size="sm"
                       onClick={() => {
-                        const command = `npx snipkit @${username}/${slug}/${file.name}`;
-                        navigator.clipboard.writeText(command);
+                        navigator.clipboard.writeText(file.npmLink);
                         toast.success('CLI command copied!', {
-                          description: `Copied: ${command}`,
+                          description: `Copied: ${file.npmLink}`,
                         });
                       }}
                       className="text-green-400 hover:text-green-300 hover:bg-green-500/10 flex-1"
@@ -190,7 +169,7 @@ export function ProjectDetail({
                       asChild
                       className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 flex-1"
                     >
-                      <Link href={`/code/${username}/${slug}/${file.name}`}>
+                      <Link href={file.redirectLink}>
                         <Eye className="w-4 h-4 mr-2" />
                         View
                       </Link>

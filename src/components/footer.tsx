@@ -8,13 +8,10 @@ export function Footer() {
         <div className="flex justify-between items-center">
           <div className="space-y-4">
             <div className="flex items-center">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-sm">S</span>
-              </div>
               <span className="font-bold text-xl text-white">Snipkit</span>
             </div>
-            <p className="text-sm text-gray-400 max-w-xs">
-              Snipkit is a platform for sharing code snippets.
+            <p className="text-sm text-gray-400 max-w-sm">
+              Snipkit is a platform for sharing code snippets across CLI.
             </p>
           </div>
 

@@ -10,12 +10,10 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/auth.hook';
 import { User, LogOut } from 'lucide-react';
 
 export function Navbar() {
-  const pathname = usePathname();
   const { clearAuth, isAuthenticated, user } = useAuth();
 
   // Generate user initials for avatar fallback
@@ -36,9 +34,6 @@ export function Navbar() {
           {/* Left: Logo */}
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center space-x-2">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-sm">S</span>
-              </div>
               <span className="font-bold text-xl text-white">Snipkit</span>
             </Link>
           </div>

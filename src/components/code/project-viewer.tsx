@@ -23,7 +23,7 @@ interface FileViewerProps {
   readonly author: string;
   readonly createdAt: string;
   readonly downloadUrl: string;
-  readonly path: string;
+  readonly command: string;
 }
 
 export function FileViewer({
@@ -32,11 +32,9 @@ export function FileViewer({
   author,
   createdAt,
   downloadUrl,
-  path,
+  command,
 }: FileViewerProps) {
-  const command = `npx snipkit @${author}/${path}`;
   const [copied, setCopied] = useState(false);
-
   const handleCopyCode = async () => {
     try {
       await navigator.clipboard.writeText(code);
@@ -69,7 +67,7 @@ export function FileViewer({
                   <div className="w-1 h-1 bg-gray-500 rounded-full"></div>
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-green-400" />
-                    <span>{new Date(createdAt).toLocaleDateString()}</span>
+                    <span>{createdAt}</span>
                   </div>
                 </div>
               </div>

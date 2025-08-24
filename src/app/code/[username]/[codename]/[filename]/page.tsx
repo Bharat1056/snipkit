@@ -1,62 +1,66 @@
-import { db } from '@/lib/db';
+'use client';
+
 import { notFound } from 'next/navigation';
 import { FileViewer } from '@/components/code/project-viewer';
-import { getSignedDownloadUrl } from '@/s3/function';
+import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { apiClient } from '@/axios';
+import axios from 'axios';
 
-interface CodeFilePageProps {
-  readonly params: Promise<{
-    readonly username: string;
-    readonly codename: string;
-    readonly filename: string;
-  }>;
+interface File {
+  name: string;
+  size: string;
+  createdAt: string;
+  npmLink: string;
 }
 
-export default async function CodeFilePage({ params }: CodeFilePageProps) {
-  const { username, codename, filename } = await params;
+function Page() {
+  const { username, codename, filename } = useParams<{
+    username: string;
+    codename: string;
+    filename: string;
+  }>();
 
-  if (!username || !codename || !filename) {
+  const [loading, setLoading] = useState<boolean>(true);
+  const [file, setFile] = useState<File>();
+  const [fileContent, setFileContent] = useState<string>('');
+  const [downloadUrl, setDownloadUrl] = useState<string>('');
+
+  useEffect(() => {
+    async function fetchCodeFile() {
+      try {
+        const res = await apiClient.get(
+          `/api/v1/web/file/get/content?username=${username}&slug=${codename}&filename=${filename}`
+        );
+        setFile(res.file);
+        setDownloadUrl(res.url);
+        const data = await axios.get(res.url);
+        setFileContent(data.data);
+      } catch (error) {
+        console.error('Error fetching code file:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchCodeFile();
+  }, [codename, filename, username]);
+
+  if (!file && !loading) {
     return notFound();
   }
 
-  const user = await db.user.findUnique({ where: { username } });
-  if (!user) {
-    return notFound();
+  if (!loading && file) {
+    return (
+      <FileViewer
+        code={fileContent}
+        filename={file.name}
+        author={username}
+        createdAt={file.createdAt}
+        downloadUrl={downloadUrl}
+        command={file.npmLink}
+      />
+    );
   }
-
-  const code = await db.code.findFirst({
-    where: { authorId: user.id, slug: codename },
-    include: { files: { where: { name: filename } } },
-  });
-
-  const file = code?.files[0];
-
-  if (!code || !file) {
-    return notFound();
-  }
-
-  const viewUrl = await getSignedDownloadUrl({
-    key: file.key as string,
-    expiresIn: 3600, // 1 hour
-  });
-
-  const downloadUrl = await getSignedDownloadUrl({
-    key: file.key as string,
-    expiresIn: 3600, // 1 hour
-    disposition: 'attachment',
-    filename: file.name,
-  });
-
-  const response = await fetch(viewUrl);
-  const fileContent = await response.text();
-
-  return (
-    <FileViewer
-      code={fileContent}
-      filename={file.name}
-      author={username}
-      createdAt={code.createdAt.toISOString()}
-      downloadUrl={downloadUrl}
-      path={file.path}
-    />
-  );
 }
+
+export default Page;
