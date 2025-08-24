@@ -1,57 +1,71 @@
+'use client';
+
 import { notFound } from 'next/navigation';
 import { ProjectDetail } from '@/components/code/projct-details';
-import { formatFileSize } from '@/lib/utils';
+import { apiClient } from '@/axios';
+import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
-export default async function ProjectDetailPage({
-  params,
-}: {
-  params: Promise<{ username: string; codename: string }>;
-}) {
-  const { username, codename } = await params;
-
-  if (!username || !codename) {
-    return notFound();
-  }
-
-  const user = await db.user.findUnique({
-    where: { username },
-  });
-
-  if (!user) {
-    return notFound();
-  }
-
-  const code = await db.code.findFirst({
-    where: {
-      authorId: user.id,
-      slug: codename,
-    },
-    include: {
-      files: true,
-    },
-  });
-  if (!code) {
-    return notFound();
-  }
-  return (
-    <ProjectDetail
-      username={username}
-      slug={code.slug}
-      title={code.title}
-      description={code.description ?? ''}
-      downloadPath={
-        code.downloadPath === '' || code.downloadPath === '.'
-          ? '/'
-          : (code.downloadPath as string)
-      }
-      access={code.access}
-      files={code.files.map(f => ({
-        id: f.id,
-        name: f.name,
-        key: f.key ?? '',
-        path: f.path ?? '',
-        size: formatFileSize(f.size),
-      }))}
-    />
-  );
+export interface CodeFile {
+  name: string;
+  path: string;
+  size: string;
+  createdAt: string;
+  key: string;
+  npmLink: string;
+  redirectLink: string;
 }
+
+export interface Author {
+  username: string;
+  fullName: string;
+}
+
+export interface Folder {
+  title: string;
+  description: string;
+  slug: string;
+  downloadPath: string;
+  access: string;
+}
+
+function ProjectDetailPage() {
+  const { username, codename } = useParams<{
+    username: string;
+    codename: string;
+  }>();
+
+  const [files, setFiles] = useState<CodeFile[]>([]);
+  const [author, setAuthor] = useState<Author>();
+  const [folder, setFolder] = useState<Folder>();
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    async function fetchProjectDetail() {
+      try {
+        const res = await apiClient.get(
+          `/api/v1/web/folder/get-all-files?username=${username}&slug=${codename}`
+        );
+        console.log(res);
+        setFiles(res.files || []);
+        setAuthor(res.author || null);
+        setFolder(res.folder || null);
+      } catch (error) {
+        console.error('Error fetching project details:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchProjectDetail();
+  }, [username, codename]);
+
+  if ((!author || !folder) && !loading) {
+    return notFound();
+  }
+
+  if (!loading && author && folder) {
+    return <ProjectDetail author={author} folder={folder} files={files} />;
+  }
+}
+
+export default ProjectDetailPage;
