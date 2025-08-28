@@ -1,7 +1,3 @@
-import { redirect } from 'next/navigation';
-import { authOptions } from '@/lib/';
-import { getServerSession } from 'next-auth';
-import { db } from '@/lib/db';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -15,7 +11,7 @@ import { Code, CheckCircle, User, Mail, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 
 interface CliLoginPageProps {
-  searchParams: Promise<{ redirect_uri?: string }>;
+  readonly searchParams: Promise<{ redirect_uri?: string }>;
 }
 
 export default async function CliLoginPage({
@@ -25,42 +21,7 @@ export default async function CliLoginPage({
   const redirectUri = params.redirect_uri
     ? decodeURIComponent(params.redirect_uri)
     : '';
-
-  const session = await getServerSession(authOptions);
-
-  if (!session?.user?.id) {
-    return redirect(
-      '/sign-in?callbackUrl=' +
-        encodeURIComponent(
-          '/cli-login' +
-            (redirectUri
-              ? `?redirect_uri=${encodeURIComponent(redirectUri)}`
-              : '')
-        )
-    );
-  }
-
-  const user = await db.user.findUnique({
-    where: {
-      id: session.user.id,
-    },
-    select: {
-      username: true,
-      email: true,
-      fullName: true,
-      createdAt: true,
-    },
-  });
-
-  if (!user) {
-    return redirect('/sign-in');
-  }
-
-  if (redirectUri) {
-    const finalRedirectUrl = `${redirectUri}${redirectUri.includes('?') ? '&' : '?'}username=${encodeURIComponent(user.username)}`;
-    return redirect(finalRedirectUrl);
-  }
-
+  console.log(redirectUri);
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md">
