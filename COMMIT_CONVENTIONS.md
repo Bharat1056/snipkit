@@ -73,10 +73,6 @@ This project uses Husky to enforce:
 
 To set up the pre-commit hooks:
 
-```bash
-npm install
-npm run prepare
-```
 
 The hooks will run automatically on every commit.
 
